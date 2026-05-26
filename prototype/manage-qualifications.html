@@ -1,0 +1,3648 @@
+<!-- Prototype: view:administration | route:qual-quals -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manage Qualifications & Learning Paths</title>
+
+  <script type="module"
+    src="https://cdn.vsp-prod.com/web-components/@vector-web-components/core/v1.19.0/core.iife.js">
+  </script>
+  <script
+    src="https://cdn.vsp-prod.com/web-components/@vector-web-components/themes/v1.5.0/styles.js">
+  </script>
+  <link rel="stylesheet"
+    href="https://cdn.vsp-prod.com/web-components/@vector-web-components/assets/v1.0.0/fonts/open-sans/v43/open-sans.css"/>
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+  <!-- Stitch AI Modal: Tailwind + Material Symbols -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&display=swap" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      corePlugins: { preflight: false },
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary":                  "#00639a",
+            "primary-container":        "#1ea7fd",
+            "on-primary":               "#ffffff",
+            "secondary":                "#52606a",
+            "on-surface":               "#181c1e",
+            "on-surface-variant":       "#3f4852",
+            "surface-white":            "#FFFFFF",
+            "surface-bright":           "#f7fafd",
+            "surface-container":        "#ebeef1",
+            "surface-container-low":    "#f1f4f7",
+            "surface-container-high":   "#e5e8eb",
+            "outline-variant":          "#bec7d3",
+            "text-main":                "#2E3438",
+            "text-muted":               "#73828C",
+          },
+          spacing: {
+            "xxl": "48px", "xl": "32px", "lg": "24px",
+            "md": "16px",  "sm": "8px",  "xs": "4px",
+          },
+          fontSize: {
+            "headline-sm": ["20px", {"lineHeight":"28px","fontWeight":"600"}],
+            "body-sm":     ["14px", {"lineHeight":"20px","fontWeight":"400"}],
+            "body-md":     ["16px", {"lineHeight":"24px","fontWeight":"400"}],
+            "label-sm":    ["12px", {"lineHeight":"14px","fontWeight":"700"}],
+            "label-md":    ["14px", {"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- React + Babel for Picker Modal -->
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../components/picker/picker.css"/>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: "Open Sans", sans-serif;
+      font-size: 14px;
+      background: var(--lumo-shade-5pct, #f4f5f7);
+      color: var(--lumo-body-text-color, #1a1a1a);
+    }
+
+    /* ── Screen management ── */
+    .screen { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    /* ── Shared page header ── */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 24px 24px 0;
+      flex-shrink: 0;
+    }
+    .page-header h1 {
+      font-size: 20px; font-weight: 700;
+      color: var(--lumo-body-text-color);
+      margin-bottom: 4px;
+    }
+    .page-header p {
+      font-size: 13px; color: var(--lumo-secondary-text-color, #6a6f76);
+    }
+    .page-header__actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--lumo-base-color, #fff);
+      border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      border-radius: 8px;
+    }
+
+    /* ── Manage table (stitch style) ── */
+    #screen-manage { background: #f3f4f6; }
+
+    .mgt-toolbar {
+      background: #718096; padding: 6px 10px;
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0; flex-wrap: wrap;
+    }
+    .mgt-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 4px;
+      font-size: 12px; font-weight: 500;
+      border: none; cursor: pointer; white-space: nowrap;
+      font-family: inherit;
+    }
+    .mgt-btn-blue  { background: #2563eb; color: #fff; }
+    .mgt-btn-blue:hover  { background: #1d4ed8; }
+    .mgt-btn-gray  { background: #64748b; color: #fff; }
+    .mgt-btn-gray:hover  { background: #475569; }
+    .mgt-btn-outline {
+      background: #f8fafc; color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .mgt-btn-outline:hover { background: #f1f5f9; }
+    .mgt-toolbar-end {
+      margin-left: auto; display: flex; align-items: center; gap: 14px; color: #fff; font-size: 14px;
+    }
+    .mgt-toolbar-end i { cursor: pointer; opacity: .9; }
+    .mgt-toolbar-end i:hover { opacity: 1; }
+
+    .mgt-table-wrap { flex: 1; overflow: auto; background: #fff; }
+    .mgt-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 12px; text-align: left;
+    }
+    .mgt-table thead tr {
+      background: #f8fafc;
+      border-bottom: 2px solid #d1d5db;
+      position: sticky; top: 0; z-index: 2;
+    }
+    .mgt-table thead th {
+      padding: 8px 10px; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.03em;
+      color: #374151; border-right: 1px solid #e5e7eb;
+      white-space: nowrap;
+    }
+    .mgt-table thead th:last-child { border-right: none; }
+    .mgt-table tbody tr { border-bottom: 1px solid #f3f4f6; }
+    .mgt-table tbody tr:hover { background: #f0f7ff; }
+    .mgt-table tbody td {
+      padding: 9px 10px; color: #1f2937;
+      border-right: 1px solid #f3f4f6; vertical-align: middle;
+    }
+    .mgt-table tbody td:last-child { border-right: none; }
+    .mgt-col-actions { width: 64px; text-align: center; }
+    .mgt-col-name    { min-width: 260px; }
+    .mgt-col-type    { width: 120px; }
+    .mgt-col-comp    { width: 110px; }
+    .mgt-col-order   { width: 110px; }
+    .mgt-col-reqs    { width: 100px; }
+    .mgt-col-active  { width: 72px; text-align: center; }
+    .mgt-col-loc     { width: 150px; }
+    .mgt-row-actions { display: flex; gap: 6px; justify-content: center; }
+    .mgt-icon-btn {
+      background: none; border: none; cursor: pointer;
+      padding: 3px; border-radius: 3px; line-height: 1; color: #374151;
+    }
+    .mgt-icon-btn.blue { color: #2563eb; }
+    .mgt-icon-btn:hover { background: #e5e7eb; }
+    .mgt-name-wrap  { display: flex; align-items: center; gap: 7px; }
+    .mgt-name-link  { cursor: pointer; color: #374151; font-weight: 600; }
+    .mgt-name-link:hover { text-decoration: underline; }
+    .mgt-active-yes { color: #16a34a; font-size: 16px; }
+    .mgt-active-no  { color: #9ca3af; font-size: 15px; }
+    .mgt-loc-link   { color: #2563eb; }
+    .mgt-loc-link:hover { text-decoration: underline; }
+
+    .mgt-footer {
+      background: #cbd5e1; padding: 4px 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; font-size: 11px; color: #374151;
+    }
+    .mgt-pg-controls { display: flex; align-items: center; gap: 2px; }
+    .mgt-pg-btn {
+      background: none; border: none; cursor: pointer; padding: 4px 6px;
+      border-radius: 3px; font-size: 11px; font-family: inherit;
+    }
+    .mgt-pg-btn:hover { background: #b2bfcc; }
+    .mgt-pg-active {
+      background: #4a5568; color: #fff; border-radius: 3px; padding: 2px 8px;
+    }
+    .mgt-footer-right { display: flex; align-items: center; gap: 16px; }
+
+    /* ── Stat pill badges ── */
+    .stat-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--lumo-primary-color-10pct, #e6f2ff);
+      border-radius: 99px; padding: 4px 12px;
+      font-size: 13px; font-weight: 500;
+      color: var(--lumo-primary-color, #0271ce);
+      white-space: nowrap;
+    }
+    .stat-pill i { font-size: 12px; }
+    .stats-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    /* ── Builder layout ── */
+    #screen-builder {
+      background: #EEF2FA;
+    }
+
+    .builder-breadcrumb {
+      font-size: 12px; color: var(--lumo-secondary-text-color);
+      margin-bottom: 10px;
+    }
+    .builder-breadcrumb a {
+      color: var(--lumo-primary-color); text-decoration: none; cursor: pointer;
+    }
+    .builder-breadcrumb a:hover { text-decoration: underline; }
+    .builder-title {
+      font-size: 24px; font-weight: 700;
+      color: var(--lumo-body-text-color);
+      margin-bottom: 12px;
+    }
+    .hero-top {
+      padding: 20px 24px 16px;
+    }
+    .hero-form {
+      border-top: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      padding: 20px 24px 24px;
+    }
+    .hero-controls {
+      display: flex; gap: 0; flex-shrink: 0; align-self: flex-start;
+    }
+    .hero-controls vaadin-button {
+      color: var(--lumo-secondary-text-color, #6a6f76);
+    }
+
+    .builder-body-wrap {
+      display: flex; flex: 1; overflow: hidden;
+    }
+    .builder-main {
+      flex: 1; overflow-y: auto; padding: 24px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .builder-section {
+      background: var(--lumo-base-color, #fff);
+      border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      border-radius: 8px; padding: 20px;
+    }
+    .builder-section h2 {
+      font-size: 14px; font-weight: 700;
+      color: var(--lumo-body-text-color);
+      margin-bottom: 16px;
+    }
+    .form-row {
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .form-row vaadin-text-field,
+    .form-row vaadin-text-area {
+      flex: 1; min-width: 220px;
+    }
+
+    /* ── Footer bar ── */
+    .builder-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 24px;
+      background: var(--lumo-base-color, #fff);
+      border-top: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      flex-shrink: 0;
+    }
+
+    /* ── Attributes ── */
+    .attr-header {
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+      padding: 16px 20px;
+    }
+    .attr-header h2 { margin: 0; }
+    .attr-body {
+      padding: 0 20px 20px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .attr-body.collapsed { display: none; }
+
+    /* ── Fix vaadin-button text-decoration (tertiary theme adds underline) ── */
+    vaadin-button::part(label) { text-decoration: none !important; }
+
+    /* ── Stage wrapper (hover target, holds + circles) ── */
+    .stage-wrapper {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .stage-wrapper:hover .stage-card {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.10);
+      transition: box-shadow 0.15s;
+    }
+    .stage-wrapper:hover .stage-add-btn { opacity: 1; }
+
+    /* ── + add-stage circles ── */
+    .stage-add-btn {
+      position: absolute; left: -14px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--lumo-primary-color, #0271ce);
+      color: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; padding: 0;
+      opacity: 0; transition: opacity 0.15s;
+      z-index: 20;
+      box-shadow: 0 2px 6px rgba(2,113,206,0.35);
+    }
+    .stage-add-btn:hover { background: var(--lumo-primary-color-50pct, #0259a4); }
+    .stage-add-top    { top: -13px; }
+    .stage-add-bottom { bottom: -13px; }
+
+    /* ── Stage cards ── */
+    .stage-card {
+      background: var(--lumo-base-color, #fff);
+      border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      border-radius: 8px; overflow: hidden;
+      transition: box-shadow 0.15s;
+    }
+    .stage-header {
+      padding: 10px 14px 12px;
+      cursor: pointer;
+    }
+    .stage-name { cursor: text; }
+    .stage-header-row1 {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .stage-header-row2 {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .stage-label {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      color: var(--lumo-secondary-text-color, #6a6f76);
+    }
+    .stage-label i { font-size: 10px; }
+    /* title + pencil inline wrapper — used by both stage and req */
+    .title-with-edit {
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .stage-name {
+      font-size: 18px; font-weight: 700;
+      color: var(--lumo-body-text-color); outline: none;
+      border-radius: 4px; padding: 1px 4px;
+    }
+    .stage-name:focus { background: var(--lumo-primary-color-10pct, #e8f0fb); }
+    .stage-actions { display: flex; gap: 0; flex-shrink: 0; }
+    .stage-actions vaadin-button { color: var(--lumo-secondary-text-color, #6a6f76); }
+    .stage-actions vaadin-button:hover { color: var(--lumo-body-text-color); }
+
+    /* Smooth collapse — outer grid container animates row height */
+    .stage-body-outer {
+      display: grid; grid-template-rows: 1fr;
+      overflow: hidden;
+      transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .stage-card.stage-collapsed .stage-body-outer { grid-template-rows: 0fr; }
+
+    @keyframes _justAdded {
+      0%   { transform: translateY(6px); opacity: 0.7; box-shadow: 0 0 0 0 rgba(0,99,154,0.35); }
+      40%  { transform: translateY(-2px); opacity: 1;   box-shadow: 0 0 0 4px rgba(0,99,154,0.18); }
+      70%  { transform: translateY(0);   opacity: 1;   box-shadow: 0 0 0 3px rgba(0,99,154,0.1); }
+      100% { transform: translateY(0);   opacity: 1;   box-shadow: 0 0 0 0 rgba(0,99,154,0); }
+    }
+    .just-added {
+      animation: _justAdded 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    /* padding must live on an inner child — padding on the grid item itself leaks through 0fr */
+    .stage-body { padding: 0; overflow: hidden; min-height: 0; }
+    .stage-body-inner { padding: 12px 16px 16px; }
+
+    /* ── Name-edit pencil button ── */
+    .name-edit-btn {
+      background: none; border: none; cursor: pointer; padding: 2px 5px;
+      border-radius: 4px; color: var(--lumo-secondary-text-color);
+      font-size: 13px; line-height: 1; flex-shrink: 0;
+    }
+    .name-edit-btn:hover { color: var(--lumo-primary-color); background: var(--lumo-shade-5pct); }
+
+    /* ── Requirement cards ── */
+    .req-card {
+      border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      border-radius: 6px; margin-bottom: 8px; overflow: hidden;
+    }
+    .req-header {
+      padding: 10px 14px 14px;
+      background: var(--lumo-base-color, #fff);
+      cursor: pointer;
+    }
+    .req-header-row1 {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .req-header-row2 {
+      display: flex; align-items: center; margin-bottom: 10px;
+    }
+    .req-label {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600;
+      color: var(--lumo-secondary-text-color, #6a6f76);
+    }
+    .req-label i { font-size: 10px; }
+    .req-name { font-weight: 700; font-size: 18px; color: var(--lumo-body-text-color); }
+    .req-actions { display: flex; gap: 0; flex-shrink: 0; }
+    .req-actions vaadin-button { color: var(--lumo-secondary-text-color, #6a6f76); }
+    .req-actions vaadin-button:hover { color: var(--lumo-body-text-color); }
+
+    /* Requirement badges */
+    .req-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 99px;
+      font-size: 13px; font-weight: 500;
+      white-space: nowrap; cursor: default;
+      position: relative; flex-shrink: 0;
+    }
+    .req-badge--assigned { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .req-badge--existing { background: #faf5ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+    .req-badge i { font-size: 12px; }
+    .req-badge::after {
+      content: attr(data-tooltip);
+      position: absolute; bottom: calc(100% + 8px); left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937; color: #fff;
+      padding: 7px 11px; border-radius: 6px;
+      font-size: 12px; font-weight: 400;
+      white-space: normal; width: 230px;
+      text-align: center; line-height: 1.45;
+      z-index: 600; pointer-events: none;
+      opacity: 0; transition: opacity 0.15s;
+    }
+    .req-badge::before {
+      content: ''; position: absolute;
+      bottom: calc(100% + 3px); left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent; border-top-color: #1f2937;
+      z-index: 601; pointer-events: none;
+      opacity: 0; transition: opacity 0.15s;
+    }
+    .req-badge:hover::after, .req-badge:hover::before { opacity: 1; }
+
+    /* Inline edit confirmation footer */
+    .req-edit-footer {
+      padding: 4px 14px 12px;
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 8px; background: #fff;
+    }
+    .req-saved-new-confirm {
+      color: #15803d;
+      font-size: 13px;
+    }
+    /* Toast notification */
+    .proto-toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: #1f2937; color: #fff;
+      padding: 13px 18px; border-radius: 10px;
+      font-size: 14px; font-family: inherit;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.22);
+      z-index: 5000; display: flex; align-items: center; gap: 10px;
+      max-width: 360px; line-height: 1.4;
+      opacity: 1;
+      animation: toastSlideIn 0.25s ease both;
+      transition: opacity 0.3s;
+    }
+    @keyframes toastSlideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Smooth collapse for requirements */
+    .req-body-outer {
+      display: grid; grid-template-rows: 1fr;
+      overflow: hidden;
+      transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .req-card.req-collapsed .req-body-outer { grid-template-rows: 0fr; }
+    .req-body { padding: 0; background: var(--lumo-base-color, #fff); overflow: hidden; min-height: 0; }
+
+    /* ── Activity rows — flat with top-border dividers ── */
+    .activity-row {
+      display: flex; gap: 12px; padding: 14px 16px;
+      border-top: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      background: #f5f8ff;
+    }
+    .activity-row__body { flex: 1; min-width: 0; }
+    .activity-row__name { font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+    .activity-row__meta { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
+    .activity-row__desc { font-size: 13px; color: var(--lumo-secondary-text-color); line-height: 1.5; }
+    .activity-row__actions { display: flex; gap: 0; flex-shrink: 0; align-items: flex-start; }
+    .activity-row__actions vaadin-button { color: var(--lumo-secondary-text-color, #6a6f76); }
+
+    /* ── Activity type/duration chips (gray, not blue) ── */
+    .activity-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--lumo-contrast-10pct, #ebebeb);
+      border-radius: 99px; padding: 2px 10px;
+      font-size: 11px; font-weight: 500;
+      color: var(--lumo-secondary-text-color, #6a6f76);
+      white-space: nowrap;
+    }
+    .activity-pill i { font-size: 10px; }
+
+    /* ── Stage structure rail ── */
+    .builder-rail {
+      width: 220px; flex-shrink: 0;
+      background: var(--lumo-base-color, #fff);
+      border-left: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .builder-rail.rail-collapsed {
+      width: 42px;
+    }
+    .builder-rail.rail-collapsed .rail-list { display: none; }
+    .builder-rail.rail-collapsed .rail-header-label { display: none; }
+    .rail-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+      cursor: pointer; user-select: none;
+    }
+    .rail-header:hover { background: var(--lumo-shade-5pct, #f4f5f7); }
+    .rail-chevron {
+      display: inline-block;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transform: rotate(0deg); /* expanded: > = click to collapse right */
+      color: var(--lumo-secondary-text-color);
+    }
+    .builder-rail.rail-collapsed .rail-chevron { transform: rotate(180deg); } /* collapsed: < = click to expand left */
+    .rail-list {
+      overflow-y: auto; flex: 1; padding: 8px 0;
+    }
+    .rail-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 16px; cursor: pointer;
+      font-size: 13px; color: var(--lumo-body-text-color);
+      transition: background 0.12s; border-radius: 4px; margin: 0 4px;
+    }
+    .rail-item:hover { background: var(--lumo-shade-5pct, #f4f5f7); }
+    .rail-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--lumo-primary-color, #0271ce);
+      color: #fff; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Audit history modal ── */
+    .audit-scrim {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .audit-modal {
+      background: var(--lumo-base-color,#fff);
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      width: 100%; max-width: 820px;
+      display: flex; flex-direction: column;
+      max-height: 80vh;
+    }
+    .audit-modal__head {
+      padding: 28px 28px 0;
+      flex-shrink: 0;
+    }
+    .audit-modal__head h2 {
+      font-size: 22px; font-weight: 700;
+      color: var(--lumo-body-text-color);
+      margin-bottom: 6px;
+    }
+    .audit-modal__head p {
+      font-size: 14px; color: var(--lumo-secondary-text-color,#6a6f76);
+      margin-bottom: 20px;
+    }
+    .audit-close {
+      position: absolute; top: 20px; right: 20px;
+      background: none; border: none; cursor: pointer;
+      font-size: 20px; color: var(--lumo-secondary-text-color);
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border-radius: 4px;
+    }
+    .audit-close:hover { background: var(--lumo-shade-5pct); }
+    .audit-modal__body {
+      overflow-y: auto; flex: 1;
+      padding: 0 28px;
+    }
+    .audit-table {
+      width: 100%; border-collapse: collapse; font-size: 14px;
+    }
+    .audit-table thead th {
+      font-weight: 700; text-align: left;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--lumo-contrast-10pct,#e3e5e8);
+      color: var(--lumo-body-text-color);
+      position: relative;
+    }
+    .audit-table thead th + th::before {
+      content: ''; position: absolute; left: 0; top: 25%; height: 50%;
+      width: 1px; background: var(--lumo-contrast-20pct,#c8ccd1);
+    }
+    .audit-table tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--lumo-contrast-10pct,#e3e5e8);
+      vertical-align: top;
+      color: var(--lumo-body-text-color);
+    }
+    .audit-table tbody tr:last-child td { border-bottom: none; }
+    .audit-modal__foot {
+      padding: 20px 28px;
+      display: flex; justify-content: flex-end; gap: 12px;
+      border-top: 1px solid var(--lumo-contrast-10pct,#e3e5e8);
+      flex-shrink: 0;
+    }
+
+    /* ── Move-to modal ── */
+    .move-modal-scrim {
+      position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .move-modal {
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      width: 100%; max-width: 560px;
+    }
+    .move-modal__head {
+      padding: 28px 28px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .move-modal__head h2 { font-size: 22px; font-weight: 700; }
+    .move-modal__close {
+      background: none; border: none; cursor: pointer;
+      font-size: 22px; color: #666; line-height: 1; padding: 4px;
+      border-radius: 4px;
+    }
+    .move-modal__close:hover { background: var(--lumo-shade-5pct,#f4f5f7); }
+    .move-modal__body { padding: 8px 28px 24px; }
+    .move-field { margin-bottom: 20px; }
+    .move-field:last-child { margin-bottom: 0; }
+    .move-label {
+      display: block; font-size: 13px;
+      color: var(--lumo-secondary-text-color,#6a6f76);
+      margin-bottom: 6px;
+    }
+    .move-select {
+      width: 100%; padding: 10px 36px 10px 12px;
+      border: 1px solid var(--lumo-contrast-20pct,#c8ccd1);
+      border-radius: 6px; font-size: 15px; font-family: inherit;
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+      -webkit-appearance: none; appearance: none; cursor: pointer;
+      color: var(--lumo-body-text-color,#1a1a1a);
+    }
+    .move-select:focus { outline: none; border-color: var(--lumo-primary-color,#0271ce); }
+    .move-modal__foot {
+      padding: 16px 28px; border-top: 1px solid var(--lumo-contrast-10pct,#e3e5e8);
+      display: flex; justify-content: flex-end; gap: 12px;
+    }
+
+    /* ── Confirmation screen ── */
+    #screen-confirm {
+      background: #eef2f7;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-card {
+      background: var(--lumo-base-color, #fff);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+      padding: 32px 32px 28px;
+      width: 100%; max-width: 680px;
+      text-align: center;
+    }
+    .confirm-check {
+      width: 64px; height: 64px; border-radius: 50%;
+      border: 3px solid #16a34a;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .confirm-check i { color: #16a34a; font-size: 28px; }
+    .confirm-title {
+      font-size: 20px; font-weight: 700;
+      color: var(--lumo-body-text-color);
+      margin-bottom: 20px;
+    }
+    .confirm-summary {
+      border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      border-radius: 8px; padding: 16px;
+      text-align: left; margin-bottom: 24px;
+    }
+    .confirm-summary__name {
+      font-size: 15px; font-weight: 700;
+      color: var(--lumo-body-text-color);
+      margin-bottom: 6px;
+    }
+    .confirm-summary__desc {
+      font-size: 13px; color: var(--lumo-secondary-text-color);
+      margin-bottom: 12px; line-height: 1.5;
+    }
+    .confirm-actions {
+      display: flex; gap: 12px;
+    }
+    .confirm-actions vaadin-button { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Screen 1: Manage Table -->
+  <div id="screen-manage" class="screen active">
+
+    <!-- Gray toolbar -->
+    <header class="mgt-toolbar">
+      <button class="mgt-btn mgt-btn-outline" onclick="focusManageSearch()">
+        <i class="fa-solid fa-magnifying-glass"></i> Search
+      </button>
+      <button class="mgt-btn mgt-btn-blue" id="btn-new-qual" onclick="openBuilder('qualification')">
+        <i class="fa-solid fa-plus"></i> New Qualification
+      </button>
+      <button class="mgt-btn mgt-btn-blue" id="btn-new-lp" onclick="showLPChoiceModal()">
+        <i class="fa-solid fa-plus"></i> New Learning Path
+      </button>
+      <button class="mgt-btn mgt-btn-gray">
+        <i class="fa-solid fa-trash"></i> Delete
+      </button>
+      <button class="mgt-btn mgt-btn-blue">
+        <i class="fa-solid fa-file-export"></i> Export
+      </button>
+      <button class="mgt-btn mgt-btn-gray">
+        <i class="fa-solid fa-users"></i> View Assignments
+      </button>
+      <button class="mgt-btn mgt-btn-blue">
+        Other Actions <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+      </button>
+      <div class="mgt-toolbar-end">
+        <i class="fa-solid fa-rotate-left" title="Refresh"></i>
+        <i class="fa-solid fa-circle-question" title="Help"></i>
+      </div>
+    </header>
+
+    <!-- Table -->
+    <div class="mgt-table-wrap">
+      <table class="mgt-table" id="qual-table">
+        <thead>
+          <tr>
+            <th class="mgt-col-actions">Actions</th>
+            <th class="mgt-col-name">
+              Name <i class="fa-solid fa-chevron-up" style="font-size:9px;color:#9ca3af;margin-left:4px;"></i>
+            </th>
+            <th class="mgt-col-type">Type</th>
+            <th class="mgt-col-comp">Completion</th>
+            <th class="mgt-col-order">Order</th>
+            <th class="mgt-col-reqs">Requirements</th>
+            <th class="mgt-col-active">Active</th>
+            <th class="mgt-col-loc">Location</th>
+          </tr>
+        </thead>
+        <tbody id="qual-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Pagination footer -->
+    <footer class="mgt-footer">
+      <div class="mgt-pg-controls">
+        <button class="mgt-pg-btn"><i class="fa-solid fa-angles-left"></i></button>
+        <button class="mgt-pg-btn"><i class="fa-solid fa-angle-left"></i></button>
+        <span class="mgt-pg-active">1</span>
+        <button class="mgt-pg-btn">2</button>
+        <button class="mgt-pg-btn">3</button>
+        <button class="mgt-pg-btn">4</button>
+        <button class="mgt-pg-btn">5</button>
+        <button class="mgt-pg-btn"><i class="fa-solid fa-angle-right"></i></button>
+        <button class="mgt-pg-btn"><i class="fa-solid fa-angles-right"></i></button>
+      </div>
+      <div class="mgt-footer-right">
+        <div style="display:flex;align-items:center;gap:6px;">
+          Page Size
+          <select style="font-size:11px;border:1px solid #94a3b8;border-radius:3px;padding:1px 4px;background:#fff;">
+            <option>50</option><option>100</option><option>200</option>
+          </select>
+        </div>
+        <div>Items 1 to 10 of 10</div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Screen 2: Builder -->
+  <div id="screen-builder" class="screen">
+
+    <!-- Builder body (main + rail) -->
+    <div class="builder-body-wrap">
+      <div class="builder-main">
+
+        <!-- Hero card: breadcrumb + title + stats + form fields -->
+        <div class="builder-section" style="padding:0;">
+          <div class="hero-top">
+            <div class="builder-breadcrumb">
+              <a onclick="confirmLeaveBuilder(() => showScreen('manage'))">← Qualifications</a>
+            </div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+              <div>
+                <div class="builder-title" id="builder-title-display">Learning Path Overview</div>
+                <div class="stats-row" id="builder-stats-row">
+                  <span class="stat-pill"><i class="fa-regular fa-clock"></i> <span id="stat-hours">0 hrs</span></span>
+                  <span class="stat-pill"><i class="fa-solid fa-layer-group"></i> <span id="stat-stages">0 Objectives</span></span>
+                  <span class="stat-pill"><i class="fa-solid fa-list-check"></i> <span id="stat-reqs">0 Requirements</span></span>
+                  <span class="stat-pill"><i class="fa-solid fa-play"></i> <span id="stat-acts">0 Activities</span></span>
+                </div>
+              </div>
+              <div class="hero-controls">
+                <vaadin-button theme="icon tertiary" aria-label="Settings" onclick="toggleLPSettings(event)"><i class="fa-solid fa-gear"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="More" onclick="lpMoreMenu(event)"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+              </div>
+            </div>
+          </div>
+          <div class="hero-form">
+            <div class="form-row">
+              <vaadin-text-field theme="outlined" id="lp-title"
+                style="flex:2;" required></vaadin-text-field>
+              <vaadin-text-field theme="outlined" label="External ID / SKU"
+                placeholder="e.g. ABC1234567890" style="flex:1;min-width:180px;"></vaadin-text-field>
+            </div>
+            <vaadin-text-area theme="outlined" id="lp-description"
+              style="width:100%;margin-top:12px;" rows="4"></vaadin-text-area>
+          </div>
+        </div>
+
+        <!-- Attributes section (Task 5) -->
+        <div id="attributes-section"></div>
+
+        <!-- Stage list (Task 6) -->
+        <div id="stage-list"></div>
+
+        <!-- Add Stage button -->
+        <button id="btn-add-stage" style="
+          width:100%; padding:14px; border:2px dashed var(--lumo-primary-color,#0271ce);
+          background:transparent; border-radius:8px; cursor:pointer; font-size:14px;
+          color:var(--lumo-primary-color,#0271ce); font-family:inherit;
+          transition: background 0.15s;
+        " onmouseover="this.style.background='var(--lumo-primary-color-10pct,#e8f0fb)'"
+           onmouseout="this.style.background='transparent'">
+          + Add Objective
+        </button>
+
+      </div>
+
+      <!-- Stage structure right rail -->
+      <div class="builder-rail" id="builder-rail">
+        <div class="rail-header" onclick="toggleRail()">
+          <span class="rail-header-label">Objective Structure</span>
+          <i class="fa-solid fa-chevron-right rail-chevron"></i>
+        </div>
+        <div class="rail-list" id="rail-list"></div>
+      </div>
+    </div>
+
+    <!-- Footer bar -->
+    <div class="builder-footer">
+      <vaadin-button theme="tertiary" id="btn-builder-cancel">Cancel</vaadin-button>
+      <vaadin-button theme="primary"  id="btn-builder-save">Save Learning Path</vaadin-button>
+    </div>
+
+  </div>
+
+  <!-- Screen 3: Post-Publish Confirmation -->
+  <div id="screen-confirm" class="screen">
+    <div class="confirm-card">
+      <div class="confirm-check">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <div class="confirm-title" id="confirm-title">Learning Path Created Successfully!</div>
+      <div class="confirm-summary">
+        <div class="confirm-summary__name" id="confirm-lp-name">Learning Path Name</div>
+        <div class="confirm-summary__desc" id="confirm-lp-desc"></div>
+        <div class="stats-row" id="confirm-stats"></div>
+      </div>
+      <div class="confirm-actions">
+        <vaadin-button theme="secondary" id="btn-confirm-manage">Manage Learning Paths</vaadin-button>
+        <vaadin-button theme="primary"   id="btn-confirm-assign">Assign this Learning Path</vaadin-button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ── Static data ────────────────────────────────────────────
+    const QUAL_DATA = [
+      { id:1, name:'Safety Onboarding 2026',          type:'learning-path',  status:'published', stages:4, requirements:12, lastModified:'May 14, 2026' },
+      { id:2, name:'BSDF Qualification',              type:'qualification',   status:'published', stages:0, requirements:5,  lastModified:'Apr 22, 2026' },
+      { id:3, name:'Factory Worker to Factory Mgr',   type:'learning-path',  status:'draft',     stages:4, requirements:8,  lastModified:'May 19, 2026' },
+      { id:4, name:'Chemical/O and G CHEMO&G',        type:'qualification',   status:'published', stages:0, requirements:7,  lastModified:'Mar 10, 2026' },
+      { id:5, name:'Technical Skills – AEC Level 2',  type:'learning-path',  status:'draft',     stages:3, requirements:6,  lastModified:'May 18, 2026' },
+      { id:6, name:'Compliance Basics LP',            type:'learning-path',  status:'published', stages:4, requirements:10, lastModified:'May 1, 2026'  },
+      { id:7, name:'BlueOval SK Competency Assess.',  type:'qualification',   status:'published', stages:0, requirements:2,  lastModified:'Apr 5, 2026'  },
+      { id:8, name:'Soft Skills Leadership Track',    type:'learning-path',  status:'draft',     stages:4, requirements:9,  lastModified:'May 17, 2026' },
+      { id:9, name:'Career Growth and Dev HR-3',      type:'qualification',   status:'published', stages:0, requirements:4,  lastModified:'Feb 28, 2026' },
+      { id:10,name:'Construction Safety Mgr LP',      type:'learning-path',  status:'published', stages:4, requirements:14, lastModified:'May 10, 2026' },
+    ];
+
+    // ── Screen navigation ──────────────────────────────────────
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + id).classList.add('active');
+      window.scrollTo(0, 0);
+      window.parent.postMessage({ type: 'shell:subheader',      show:   id === 'builder' }, '*');
+      window.parent.postMessage({ type: 'shell:builder-active', active: id === 'builder' }, '*');
+    }
+
+    // ── Unsaved changes guard ─────────────────────────────────
+    function showUnsavedWarning(onLeave) {
+      document.getElementById('unsaved-warning-scrim')?.remove();
+      const scrim = document.createElement('div');
+      scrim.id = 'unsaved-warning-scrim';
+      scrim.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;';
+      scrim.innerHTML = `
+        <div style="background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.18);width:100%;max-width:580px;padding:48px 40px 36px;text-align:center;">
+          <div style="margin-bottom:28px;line-height:1;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width:88px;height:88px;fill:none;stroke:#d97706;stroke-width:1.6;display:inline-block;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+          </div>
+          <p style="font-size:21px;font-weight:700;color:#111827;margin:0 0 36px;line-height:1.3;">You have unsaved changes to this ${currentBuilderType === 'learning-path' ? 'learning path' : 'qualification'}.</p>
+          <div style="display:flex;gap:12px;">
+            <button id="uw-cancel" style="flex:1;padding:14px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#374151;font-weight:500;">Cancel</button>
+            <button id="uw-discard" style="flex:1;padding:14px;border:1.5px solid #3b82f6;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#3b82f6;font-weight:500;">Discard Changes</button>
+            <button id="uw-save" style="flex:1;padding:14px;border:none;border-radius:8px;background:#3b82f6;font-size:15px;font-family:inherit;cursor:pointer;color:#fff;font-weight:700;">Save and Leave</button>
+          </div>
+        </div>`;
+      document.body.appendChild(scrim);
+      const proceed = () => {
+        scrim.remove();
+        if (_savedAsNewInSession.length > 0) { showNewReqPublishConfirm(onLeave); }
+        else { onLeave(); }
+      };
+      scrim.querySelector('#uw-cancel').addEventListener('click', () => scrim.remove());
+      scrim.querySelector('#uw-discard').addEventListener('click', proceed);
+      scrim.querySelector('#uw-save').addEventListener('click', proceed);
+    }
+
+    function confirmLeaveBuilder(onLeave) { showUnsavedWarning(onLeave); }
+
+    // ── Requirement dirty-state tracking ──────────────────────
+    const _reqSnapshots = new Map();
+    let _savedAsNewInSession = [];   // names of requirements saved-as-new this session
+
+    function showToast(iconClass, message) {
+      const existing = document.getElementById('proto-toast');
+      if (existing) { clearTimeout(existing._t); existing.remove(); }
+      const t = document.createElement('div');
+      t.id = 'proto-toast';
+      t.className = 'proto-toast';
+      t.innerHTML = `<i class="${iconClass}" style="font-size:18px;flex-shrink:0;"></i><span>${message}</span>`;
+      document.body.appendChild(t);
+      t._t = setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+    }
+
+    function showNewReqPublishConfirm(onLeave) {
+      document.getElementById('new-req-publish-scrim')?.remove();
+      const count = _savedAsNewInSession.length;
+      const nameList = _savedAsNewInSession.slice(0, 3).map(n => `<strong>"${n}"</strong>`).join(', ')
+        + (_savedAsNewInSession.length > 3 ? ` and ${_savedAsNewInSession.length - 3} more` : '');
+      const scrim = document.createElement('div');
+      scrim.id = 'new-req-publish-scrim';
+      scrim.style.cssText = 'position:fixed;inset:0;z-index:3500;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;';
+      scrim.innerHTML = `
+        <div style="background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.18);width:100%;max-width:600px;padding:48px 40px 36px;text-align:center;font-family:inherit;">
+          <div style="margin-bottom:24px;line-height:1;color:#3b82f6;font-size:64px;">
+            <i class="fa-solid fa-bookmark"></i>
+          </div>
+          <p style="font-size:20px;font-weight:700;color:#111827;margin:0 0 12px;">Publish your new requirement${count !== 1 ? 's' : ''}?</p>
+          <p style="font-size:14px;color:#6b7280;margin:0 0 32px;line-height:1.65;">
+            You created ${count} new requirement${count !== 1 ? 's' : ''} this session: ${nameList}.
+            Would you like to publish ${count !== 1 ? 'them' : 'it'} to the requirement library so ${count !== 1 ? 'they' : 'it'} can be assigned, or discard ${count !== 1 ? 'them' : 'it'}?
+          </p>
+          <div style="display:flex;gap:12px;">
+            <button id="nrp-discard" style="flex:1;padding:14px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#374151;font-weight:500;">Discard New Requirement${count !== 1 ? 's' : ''}</button>
+            <button id="nrp-publish" style="flex:1;padding:14px;border:none;border-radius:8px;background:#3b82f6;font-size:15px;font-family:inherit;cursor:pointer;color:#fff;font-weight:700;">Publish and Leave</button>
+          </div>
+        </div>`;
+      document.body.appendChild(scrim);
+      scrim.querySelector('#nrp-discard').addEventListener('click', () => {
+        _savedAsNewInSession = []; scrim.remove(); onLeave();
+      });
+      scrim.querySelector('#nrp-publish').addEventListener('click', () => {
+        _savedAsNewInSession = []; scrim.remove(); onLeave();
+      });
+    }
+
+    function _snapshotReq(req) {
+      if (!_reqSnapshots.has(req._id)) {
+        _reqSnapshots.set(req._id, JSON.stringify({
+          name: req.name, desc: req.desc || '',
+          criteria: req.criteria || 'all', order: req.order || 'sequential',
+          activities: req.activities,
+        }));
+      }
+    }
+
+    function _markReqDirty(stageIdx, reqIdx) {
+      const req = stages[stageIdx].requirements[reqIdx];
+      // Permanently record that this req was ever existing/assigned before any save-as-new
+      if (!req.isNew || req.isAssigned) req._wasExisting = true;
+      if (req.isNew && !req._wasExisting) return;
+      _snapshotReq(req);
+      req._dirty = true;
+      req._savedAsNew = false; // new edits supersede the saved-as-new confirmation banner
+    }
+
+    function reqSaveAsNew(stageIdx, reqIdx) {
+      const req = stages[stageIdx].requirements[reqIdx];
+      req._dirty = false;
+      req.isNew = true;
+      req.isAssigned = false;
+      req._savedAsNew = true;
+      _reqSnapshots.delete(req._id);
+      _savedAsNewInSession.push(req.name);
+      renderStageList();
+    }
+
+    function reqUpdateExisting(stageIdx, reqIdx) {
+      const req = stages[stageIdx].requirements[reqIdx];
+      document.getElementById('req-update-confirm-scrim')?.remove();
+      const scrim = document.createElement('div');
+      scrim.id = 'req-update-confirm-scrim';
+      scrim.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;';
+      scrim.innerHTML = `
+        <div style="background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.18);width:100%;max-width:580px;padding:48px 40px 36px;text-align:center;font-family:inherit;">
+          <div style="margin-bottom:24px;line-height:1;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width:80px;height:80px;fill:none;stroke:#d97706;stroke-width:1.6;display:inline-block;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+          </div>
+          <p style="font-size:20px;font-weight:700;color:#111827;margin:0 0 12px;">Update this existing requirement?</p>
+          <p style="font-size:14px;color:#6b7280;margin:0 0 8px;line-height:1.6;">Your changes to <strong>"${req.name}"</strong> will apply everywhere this requirement is used.</p>
+          <p style="font-size:14px;color:#6b7280;margin:0 0 32px;line-height:1.6;">This may impact learners with active assignments and affect other administrators who are currently using or assigning this requirement.</p>
+          <div style="display:flex;gap:12px;">
+            <button id="rue-cancel" style="flex:1;padding:14px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#374151;font-weight:500;">Go Back</button>
+            <button id="rue-confirm" style="flex:1;padding:14px;border:none;border-radius:8px;background:#3b82f6;font-size:15px;font-family:inherit;cursor:pointer;color:#fff;font-weight:700;">Yes, Update Existing</button>
+          </div>
+        </div>`;
+      document.body.appendChild(scrim);
+      scrim.querySelector('#rue-cancel').addEventListener('click', () => scrim.remove());
+      scrim.querySelector('#rue-confirm').addEventListener('click', () => {
+        req._dirty = false;
+        _reqSnapshots.delete(req._id);
+        scrim.remove();
+        renderStageList();
+      });
+    }
+
+    function reqCancelEdits(stageIdx, reqIdx) {
+      const req = stages[stageIdx].requirements[reqIdx];
+      const snapJSON = _reqSnapshots.get(req._id);
+      if (snapJSON) {
+        const snap = JSON.parse(snapJSON);
+        req.name       = snap.name;
+        req.desc       = snap.desc;
+        req.criteria   = snap.criteria;
+        req.order      = snap.order;
+        req.activities = snap.activities;
+      }
+      req._dirty = false;
+      _reqSnapshots.delete(req._id);
+      renderStageList();
+    }
+
+    function reqRenameStart(e, stageIdx, reqIdx) {
+      e.stopPropagation();
+      const req = stages[stageIdx].requirements[reqIdx];
+      if (!req.isNew || req._wasExisting) _snapshotReq(req); // snapshot before editing starts
+      const span = document.getElementById('req-name-' + stageIdx + '-' + reqIdx);
+      if (!span) return;
+      span.contentEditable = 'true';
+      span.style.cssText += ';outline:2px solid var(--lumo-primary-color,#3b82f6);border-radius:4px;padding:2px 6px;min-width:40px;';
+      span.focus();
+      const range = document.createRange();
+      range.selectNodeContents(span);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      span.addEventListener('blur', () => {
+        const val = span.textContent.trim() || req.name;
+        stages[stageIdx].requirements[reqIdx].name = val;
+        span.contentEditable = 'false';
+        span.style.outline = '';
+        span.style.borderRadius = '';
+        span.style.padding = '';
+        if (!req.isNew) { req._dirty = true; renderStageList(); }
+      }, { once: true });
+      span.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); span.blur(); } });
+    }
+
+    // ── Builder entry points ───────────────────────────────────
+    let currentBuilderType = 'learning-path';
+    let currentBuilderData = null;
+
+    function openBuilder(type, data) {
+      _savedAsNewInSession = [];
+      currentBuilderType = type;
+      currentBuilderData = data || null;
+      setupBuilder(type, data);
+      showScreen('builder');
+    }
+
+    // ── setupBuilder ───────────────────────────────────────────
+    function setupBuilder(type, data) {
+      const titleField = document.getElementById('lp-title');
+      const descField  = document.getElementById('lp-description');
+      const saveBtn    = document.getElementById('btn-builder-save');
+      const titleDisplay = document.getElementById('builder-title-display');
+
+      if (type === 'learning-path') {
+        titleField.label = 'Learning Path Title';
+        titleField.placeholder = 'e.g. Factory Worker to Factory Manager';
+        descField.label = 'Learning Path Description';
+        saveBtn.textContent = 'Save Learning Path';
+        titleDisplay.textContent = 'Learning Path Overview';
+      } else {
+        titleField.label = 'Qualification Title';
+        titleField.placeholder = 'e.g. Safety Qualification 2026';
+        descField.label = 'Qualification Description';
+        saveBtn.textContent = 'Save Qualification';
+        titleDisplay.textContent = 'New Qualification';
+      }
+
+      if (data) {
+        titleField.value = data.name || '';
+        descField.value = data.description || '';
+      } else {
+        titleField.value = '';
+        descField.value = '';
+      }
+
+      buildAttributesSection();
+
+      const initialStages = (type === 'learning-path') ? LP_DEFAULT_STAGES() : QUAL_DEFAULT_STAGES();
+      buildStageList(initialStages);
+    }
+
+    // ── Attributes ─────────────────────────────────────────────
+    let attrCount = 0;
+
+    function buildAttributesSection() {
+      attrCount = 0;
+      const section = document.getElementById('attributes-section');
+      section.innerHTML = `
+        <div class="builder-section" style="padding:0;">
+          <div class="attr-header" onclick="toggleAttributes(this)">
+            <h2 style="font-size:14px;font-weight:700;">Attributes (<span id="attr-count">0</span>)</h2>
+            <i class="fa-solid fa-chevron-down" id="attr-chevron" style="color:var(--lumo-secondary-text-color);transition:transform 0.2s;"></i>
+          </div>
+          <div class="attr-body collapsed" id="attr-body">
+            <div>
+              <label style="font-size:12px;font-weight:600;color:var(--lumo-secondary-text-color);display:block;margin-bottom:6px;">Tags</label>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <vaadin-checkbox value="safety"     onchange="updateAttrCount()">Safety</vaadin-checkbox>
+                <vaadin-checkbox value="compliance" onchange="updateAttrCount()">Compliance</vaadin-checkbox>
+                <vaadin-checkbox value="technical"  onchange="updateAttrCount()">Technical</vaadin-checkbox>
+                <vaadin-checkbox value="soft-skills" onchange="updateAttrCount()">Soft Skills</vaadin-checkbox>
+              </div>
+            </div>
+            <div>
+              <vaadin-select theme="outlined" label="Difficulty" id="attr-difficulty"
+                style="width:100%;" onchange="updateAttrCount()">
+              </vaadin-select>
+            </div>
+            <div>
+              <vaadin-text-field theme="outlined" label="Days to Complete"
+                placeholder="e.g. 30" style="width:100%;" onchange="updateAttrCount()">
+              </vaadin-text-field>
+            </div>
+            <div>
+              <vaadin-text-field theme="outlined" label="Regulations"
+                placeholder="e.g. OSHA 29 CFR" style="width:100%;" onchange="updateAttrCount()">
+              </vaadin-text-field>
+            </div>
+            <div style="grid-column:1/-1;">
+              <vaadin-text-field theme="outlined" label="Related Qualification"
+                placeholder="Search qualifications…" style="width:100%;" onchange="updateAttrCount()">
+                <i class="fa-solid fa-magnifying-glass" slot="prefix" style="color:var(--lumo-secondary-text-color);"></i>
+              </vaadin-text-field>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Set difficulty options via JS (vaadin-select requires items array)
+      customElements.whenDefined('vaadin-select').then(() => {
+        const sel = document.getElementById('attr-difficulty');
+        if (sel) {
+          sel.items = [
+            { label: 'Beginner',      value: 'beginner' },
+            { label: 'Intermediate',  value: 'intermediate' },
+            { label: 'Advanced',      value: 'advanced' },
+          ];
+        }
+      });
+    }
+
+    function toggleAttributes(header) {
+      const body    = document.getElementById('attr-body');
+      const chevron = document.getElementById('attr-chevron');
+      if (!body || !chevron) return;
+      const collapsed = body.classList.toggle('collapsed');
+      chevron.style.transform = collapsed ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+
+    function updateAttrCount() {
+      const checkboxes = document.querySelectorAll('#attr-body vaadin-checkbox');
+      const fields     = document.querySelectorAll('#attr-body vaadin-text-field, #attr-body vaadin-select');
+      let count = 0;
+      checkboxes.forEach(cb => { if (cb.checked) count++; });
+      fields.forEach(f  => { if (f.value && f.value.trim()) count++; });
+      const countEl = document.getElementById('attr-count');
+      if (countEl) countEl.textContent = count;
+    }
+
+    // ── Stage data helpers ─────────────────────────────────────
+    function LP_DEFAULT_STAGES() {
+      const r = (name, acts, assigned) => Object.assign(REQ_SAMPLE(name, acts), { isAssigned: !!assigned });
+      return [
+        { name:'Safety',          hours:8,  requirements:[ r('Safety Fundamentals', 2, true), r('Hazard Identification', 2) ] },
+        { name:'Compliance',      hours:6,  requirements:[ r('Regulatory Overview', 2, true) ] },
+        { name:'Technical Skills',hours:10, requirements:[ r('Equipment Operation', 3) ] },
+        { name:'Soft Skills',     hours:4,  requirements:[] },
+      ];
+    }
+
+    function QUAL_DEFAULT_STAGES() {
+      return [ { name:'Objective 1', hours:0, requirements:[] } ];
+    }
+
+    let _reqIdCounter = 1;
+    function _newReqId() { return 'req-' + (_reqIdCounter++); }
+
+    function REQ_SAMPLE(name, actCount) {
+      const activities = [];
+      for (let i = 0; i < actCount; i++) {
+        activities.push({
+          name: 'Lorem Ipsum Dolor Sit Amet',
+          type: 'Computer Based',
+          hours: 2,
+          desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.',
+        });
+      }
+      return { _id: _newReqId(), isNew: false, isAssigned: false, criteria: 'all', order: 'sequential', name, desc: '', hours: actCount * 2, activities };
+    }
+
+    // ── Stage list ─────────────────────────────────────────────
+    let stages = [];
+    let _expandedStages   = new Set(); // indices of currently-expanded stage cards
+    let _pendingHighlight = null;      // { stageIdx, reqIdx?, actIdx? }
+
+    function buildStageList(stageData) {
+      stages = stageData.map((s, i) => ({ ...s, id: i }));
+      renderStageList();
+    }
+
+    function renderStageList() {
+      const container = document.getElementById('stage-list');
+      container.innerHTML = '';
+      stages.forEach((stage, idx) => {
+        const card = document.createElement('div');
+        card.className = 'stage-card' + (_expandedStages.has(idx) ? '' : ' stage-collapsed');
+        card.dataset.idx = idx;
+
+        const actTotal = stage.requirements.reduce((sum, r) => sum + r.activities.length, 0);
+
+        card.innerHTML = `
+          <div class="stage-header" onclick="toggleStageCard(event,${idx})">
+            <div class="stage-header-row1">
+              <span class="stage-label"><i class="fa-solid fa-gear"></i> Objective</span>
+              <div class="stage-actions">
+                <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveStage(${idx},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveStage(${idx},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="More" onclick="stageMenu(event,${idx})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Collapse" class="stage-collapse-btn"><i class="fa-solid fa-chevron-right stage-chevron" style="font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(${_expandedStages.has(idx) ? '90deg' : '0deg'});"></i></vaadin-button>
+              </div>
+            </div>
+            <div class="stage-header-row2">
+              <div class="title-with-edit">
+                <span class="stage-name" contenteditable="true" data-idx="${idx}">${stage.name}</span>
+                <button class="name-edit-btn" title="Rename" onclick="this.previousElementSibling.focus()"><i class="fa-regular fa-pen-to-square"></i></button>
+              </div>
+            </div>
+            <div class="stats-row" style="margin-top:10px;">
+              <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(stage.hours)}</span>
+              <span class="stat-pill"><i class="fa-solid fa-list-check"></i> ${stage.requirements.length} Requirements</span>
+              <span class="stat-pill"><i class="fa-solid fa-play"></i> ${actTotal} Activities</span>
+            </div>
+          </div>
+          <div class="stage-body-outer">
+            <div class="stage-body">
+              <div class="stage-body-inner">
+                <vaadin-text-area theme="outlined" id="stage-desc-${idx}" placeholder="Describe the objective and what the learner will achieve"
+                  style="width:100%;margin-bottom:12px;" rows="2"></vaadin-text-area>
+                <div class="req-list" id="req-list-${idx}">
+                  ${stage.requirements.map((r, ri) => renderReqHTML(idx, ri, r)).join('')}
+                </div>
+                <div style="display:flex;justify-content:center;padding:12px 0 4px;">
+                  <vaadin-button theme="secondary" onclick="reqMenu(event,${idx})">
+                    <i class="fa-solid fa-plus" slot="prefix"></i> Add Requirement
+                    <i class="fa-solid fa-chevron-down" slot="suffix" style="font-size:10px;margin-left:2px;"></i>
+                  </vaadin-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Wire up contenteditable stage name → update rail
+        const nameEl = card.querySelector('.stage-name');
+        nameEl.addEventListener('input', () => {
+          stages[idx].name = nameEl.textContent.trim();
+          renderRail();
+        });
+
+        // Wrap card in hover target with + circles
+        const wrapper = document.createElement('div');
+        wrapper.className = 'stage-wrapper';
+
+        const btnTop = document.createElement('button');
+        btnTop.className = 'stage-add-btn stage-add-top';
+        btnTop.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        btnTop.title = 'Add stage above';
+        btnTop.addEventListener('click', e => { e.stopPropagation(); stageAddMenu(e, idx, 'above'); });
+
+        const btnBottom = document.createElement('button');
+        btnBottom.className = 'stage-add-btn stage-add-bottom';
+        btnBottom.innerHTML = '<i class="fa-solid fa-plus"></i>';
+        btnBottom.title = 'Add stage below';
+        btnBottom.addEventListener('click', e => { e.stopPropagation(); stageAddMenu(e, idx, 'below'); });
+
+        wrapper.appendChild(btnTop);
+        wrapper.appendChild(card);
+        wrapper.appendChild(btnBottom);
+        container.appendChild(wrapper);
+      });
+
+      // Restore stage and req description values and wire input → model
+      stages.forEach((stage, si) => {
+        const stageTa = document.getElementById('stage-desc-' + si);
+        if (stageTa) {
+          if (stage.desc) stageTa.value = stage.desc;
+          stageTa.addEventListener('input', () => { stages[si].desc = stageTa.value; });
+        }
+        stage.requirements.forEach((req, ri) => {
+          const ta = document.getElementById('req-desc-' + si + '-' + ri);
+          if (!ta) return;
+          if (req.desc) ta.value = req.desc;
+          ta.addEventListener('input', () => { stages[si].requirements[ri].desc = ta.value; });
+        });
+      });
+
+      // Reveal & animate newly-added item
+      if (_pendingHighlight !== null) {
+        const h = _pendingHighlight;
+        _pendingHighlight = null;
+        const stageCard = document.querySelector(`.stage-card[data-idx="${h.stageIdx}"]`);
+        if (stageCard) {
+          stageCard.classList.remove('stage-collapsed');
+          _expandedStages.add(h.stageIdx);
+          const chevron = stageCard.querySelector('.stage-chevron');
+          if (chevron) chevron.style.transform = 'rotate(90deg)';
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              let flashEl;
+              if (h.reqIdx !== undefined) {
+                const reqCards = stageCard.querySelectorAll('.req-card');
+                flashEl = reqCards[h.reqIdx];
+                if (flashEl && h.actIdx !== undefined) {
+                  const actRows = flashEl.querySelectorAll('.activity-row');
+                  flashEl = actRows[h.actIdx] || flashEl;
+                }
+              } else {
+                flashEl = stageCard;
+              }
+              if (flashEl) {
+                flashEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                flashEl.classList.add('just-added');
+                flashEl.addEventListener('animationend', () => flashEl.classList.remove('just-added'), { once: true });
+              }
+            }, 50);
+          });
+        }
+      }
+
+      renderRail();
+      updateStats();
+    }
+
+    function renderReqHTML(stageIdx, reqIdx, req) {
+      const badgesHTML = [
+        req.isAssigned ? `<span class="req-badge req-badge--assigned" data-tooltip="This requirement is currently assigned to at least one learner and may affect active enrollments if changed."><i class="fa-solid fa-user-check"></i>Assigned Requirement</span>` : '',
+        !req.isNew    ? `<span class="req-badge req-badge--existing" data-tooltip="This requirement was previously created and is available for assignment across learning paths."><i class="fa-solid fa-bookmark"></i>Existing Requirement</span>` : '',
+      ].filter(Boolean).join('');
+
+      let editFooterHTML = '';
+      if (req._savedAsNew && !req._dirty) {
+        editFooterHTML = `
+          <div class="req-edit-footer req-saved-new-confirm">
+            <i class="fa-solid fa-circle-check" style="color:#16a34a;font-size:16px;flex-shrink:0;"></i>
+            <span>Saved New Requirement: <strong>${req.name}</strong></span>
+          </div>`;
+      } else if (req._dirty && (!req.isNew || req._wasExisting)) {
+        // After save-as-new (isNew=true but _wasExisting), only offer Cancel — no "existing" to update
+        const updateBtn = !req.isNew
+          ? `<vaadin-button theme="primary" onclick="reqUpdateExisting(${stageIdx},${reqIdx})">Update Existing</vaadin-button>`
+          : '';
+        editFooterHTML = `
+          <div class="req-edit-footer">
+            <vaadin-button theme="tertiary"  onclick="reqCancelEdits(${stageIdx},${reqIdx})">Cancel Edits</vaadin-button>
+            <vaadin-button theme="secondary" onclick="reqSaveAsNew(${stageIdx},${reqIdx})">Save as New</vaadin-button>
+            ${updateBtn}
+          </div>`;
+      }
+
+      const activitiesHTML = req.activities.map((a, ai) => `
+        <div class="activity-row">
+          <div class="activity-row__body">
+            <div class="activity-row__name">${a.name}</div>
+            <div class="activity-row__meta">
+              ${a.sku ? `<span class="activity-pill" style="font-family:monospace;letter-spacing:0.03em;color:#6f7883;">${a.sku}</span>` : ''}
+              <span class="activity-pill">${a.type}</span>
+              <span class="activity-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(a.hours||0)}</span>
+            </div>
+            <div class="activity-row__desc">${a.desc}</div>
+            <div style="margin-top:10px;">
+              <vaadin-button theme="secondary" onclick="openActivityDetail(${stageIdx},${reqIdx},${ai})">View Details</vaadin-button>
+            </div>
+          </div>
+          <div class="activity-row__actions">
+            <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveActivity(event,${stageIdx},${reqIdx},${ai},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
+            <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveActivity(event,${stageIdx},${reqIdx},${ai},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
+            <vaadin-button theme="icon tertiary" aria-label="More" onclick="actMoreMenu(event,${stageIdx},${reqIdx},${ai})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+          </div>
+        </div>
+      `).join('');
+
+      return `
+        <div class="req-card">
+          <div class="req-header" onclick="toggleReqCard(event)">
+            <div class="req-header-row1">
+              <span class="req-label"><i class="fa-solid fa-gear"></i> Requirement</span>
+              <div class="req-actions">
+                <vaadin-button theme="icon tertiary" aria-label="Settings" onclick="showReqSettings(event,${stageIdx},${reqIdx})"><i class="fa-solid fa-gear"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveReq(event,${stageIdx},${reqIdx},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveReq(event,${stageIdx},${reqIdx},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="More" onclick="reqMoreMenu(event,${stageIdx},${reqIdx})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Collapse" class="req-collapse-btn"><i class="fa-solid fa-chevron-right req-chevron" style="font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(90deg);"></i></vaadin-button>
+              </div>
+            </div>
+            <div class="req-header-row2">
+              <div class="title-with-edit">
+                <span class="req-name" id="req-name-${stageIdx}-${reqIdx}">${req.name}</span>
+                <button class="name-edit-btn" title="Rename" onclick="reqRenameStart(event,${stageIdx},${reqIdx})"><i class="fa-regular fa-pen-to-square"></i></button>
+              </div>
+            </div>
+            <div class="stats-row">
+              <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(req.hours)}</span>
+              <span class="stat-pill"><i class="fa-solid fa-table-list"></i> ${req.activities.length} Activities</span>
+              ${badgesHTML}
+            </div>
+          </div>
+          <div class="req-body-outer">
+            <div class="req-body">
+              <div style="padding:12px 16px 4px;">
+                <vaadin-text-area theme="outlined" id="req-desc-${stageIdx}-${reqIdx}"
+                  placeholder="Describe this requirement and what the learner will achieve"
+                  style="width:100%;" rows="2"></vaadin-text-area>
+              </div>
+              ${activitiesHTML}
+              <div style="border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);display:flex;justify-content:center;padding:14px 16px;">
+                <vaadin-button theme="secondary" onclick="openActivityPicker(${stageIdx},${reqIdx})">
+                  <i class="fa-solid fa-plus" slot="prefix"></i> Add Existing Activity
+                </vaadin-button>
+              </div>
+            </div>
+          </div>
+          ${editFooterHTML}
+        </div>
+      `;
+    }
+
+    // ── Picker bridge ──────────────────────────────────────────
+    // One persistent root — avoids "createRoot on a container that already
+    // has a root" React errors. A unique key on each open forces PickerModal
+    // to remount with fresh state every time.
+    let _pickerRoot = null;
+
+    function openPicker(configKey, onSubmit) {
+      const el = document.getElementById('picker-root');
+      if (!_pickerRoot) {
+        _pickerRoot = ReactDOM.createRoot(el);
+      }
+      const root = _pickerRoot;
+
+      function handleClose() {
+        root.render(React.createElement('span')); // clear modal, keep root alive
+      }
+      function handleSubmit(items) {
+        onSubmit && onSubmit(items);
+        handleClose();
+      }
+
+      root.render(React.createElement(window.PickerModal, {
+        key: Date.now(),                          // forces fresh state each open
+        config: window.PICKER_CONFIGS[configKey],
+        open: true,
+        onClose: handleClose,
+        onSubmit: handleSubmit,
+      }));
+    }
+
+    function parseDuration(d) {
+      if (!d) return 1;
+      const n = parseFloat(d);
+      return d.toLowerCase().includes('min') ? Math.round(n / 60 * 10) / 10 : (n || 1);
+    }
+
+    function formatDuration(hours) {
+      if (!hours || hours <= 0) return '0 min';
+      if (hours < 1) return Math.round(hours * 60) + ' min';
+      return Math.ceil(hours) + ' hrs';
+    }
+
+    function openActivityPicker(stageIdx, reqIdx) {
+      const req = stages[stageIdx].requirements[reqIdx];
+      if (!req.isNew || req._wasExisting) _snapshotReq(req);
+      openPicker('activities', (items) => {
+        items.forEach(item => {
+          stages[stageIdx].requirements[reqIdx].activities.push({
+            name: item.name,
+            type: item.type,
+            hours: parseDuration(item.duration),
+            desc: item.description || '',
+          });
+        });
+        _markReqDirty(stageIdx, reqIdx);
+        _pendingHighlight = { stageIdx, reqIdx, actIdx: stages[stageIdx].requirements[reqIdx].activities.length - 1 };
+        renderStageList();
+      });
+    }
+
+    function openActivityDetail(stageIdx, reqIdx, actIdx) {
+      const act = stages[stageIdx].requirements[reqIdx].activities[actIdx];
+      const pickerAct = {
+        id: 'builder-' + stageIdx + '-' + reqIdx + '-' + actIdx,
+        name: act.name,
+        type: act.type,
+        duration: act.hours >= 1 ? act.hours + ' hrs' : Math.round(act.hours * 60) + ' min',
+        credits: 0,
+        description: act.desc || 'No description available.',
+        heroColors: ['#1B2B41', '#0271CE'],
+        isNew: false,
+      };
+      const el = document.getElementById('picker-root');
+      if (!_pickerRoot) _pickerRoot = ReactDOM.createRoot(el);
+      const root = _pickerRoot;
+      function handleClose() { root.render(React.createElement('span')); }
+      root.render(React.createElement(window._DetailModal, {
+        key: Date.now(),
+        row: pickerAct,
+        config: window.PICKER_CONFIGS.activities,
+        onClose: handleClose,
+      }));
+    }
+
+    function openRequirementPicker(stageIdx) {
+      openPicker('requirements', (items) => {
+        items.forEach(item => {
+          stages[stageIdx].requirements.push({
+            _id: _newReqId(), isNew: true,
+            name: item.name,
+            hours: (item.activityList || []).reduce((s, a) => s + parseDuration(a.duration), 0),
+            activities: (item.activityList || []).map(a => ({
+              name: a.name,
+              type: a.type,
+              hours: parseDuration(a.duration),
+              desc: a.description || '',
+            })),
+          });
+        });
+        _pendingHighlight = { stageIdx, reqIdx: stages[stageIdx].requirements.length - 1 };
+        renderStageList();
+      });
+    }
+
+    function addRequirementToStage(stageIdx) {
+      const r = REQ_SAMPLE('New Requirement', 0);
+      r.isNew = true;
+      stages[stageIdx].requirements.push(r);
+      _pendingHighlight = { stageIdx, reqIdx: stages[stageIdx].requirements.length - 1 };
+      renderStageList();
+    }
+
+    function moveStage(idx, dir) {
+      const newIdx = idx + dir;
+      if (newIdx < 0 || newIdx >= stages.length) return;
+      [stages[idx], stages[newIdx]] = [stages[newIdx], stages[idx]];
+      renderStageList();
+    }
+
+    function moveReq(e, stageIdx, reqIdx, dir) {
+      e.stopPropagation();
+      const reqs = stages[stageIdx].requirements;
+      const newIdx = reqIdx + dir;
+      if (newIdx < 0 || newIdx >= reqs.length) return;
+      [reqs[reqIdx], reqs[newIdx]] = [reqs[newIdx], reqs[reqIdx]];
+      renderStageList();
+    }
+
+    function moveActivity(e, stageIdx, reqIdx, actIdx, dir) {
+      e.stopPropagation();
+      const acts = stages[stageIdx].requirements[reqIdx].activities;
+      const newIdx = actIdx + dir;
+      if (newIdx < 0 || newIdx >= acts.length) return;
+      _markReqDirty(stageIdx, reqIdx);
+      [acts[actIdx], acts[newIdx]] = [acts[newIdx], acts[actIdx]];
+      renderStageList();
+    }
+
+    function showMoveModal(type, srcStageIdx, srcReqIdx, srcActIdx) {
+      document.getElementById('move-modal-scrim')?.remove();
+
+      const titles = { stage:'Move Objective to', requirement:'Move Requirement to', activity:'Move Activity to' };
+
+      // Build stage options (exclude source for stage moves)
+      const stageOpts = stages.map((s, i) =>
+        `<option value="${i}"${type === 'stage' && i === srcStageIdx ? ' disabled' : ''}>${s.name}</option>`
+      ).join('');
+
+      // Determine initial target stage index
+      const initStage = type === 'stage'
+        ? stages.findIndex((_, i) => i !== srcStageIdx)
+        : srcStageIdx;
+
+      // Helper: build req options for a given stage
+      function reqOptsFor(si) {
+        return stages[si].requirements.map((r, i) => `<option value="${i}">${r.name}</option>`).join('')
+          || '<option value="">No requirements</option>';
+      }
+      // Helper: build act options for a given stage + req
+      function actOptsFor(si, ri) {
+        return (stages[si]?.requirements[ri]?.activities || []).map((a, i) => `<option value="${i}">${a.name}</option>`).join('')
+          || '<option value="">No activities</option>';
+      }
+
+      const posOpts = `<option value="before">Before</option><option value="after">After</option>`;
+
+      // Body fields differ by type
+      let bodyHTML;
+      if (type === 'requirement') {
+        bodyHTML = `
+          <div class="move-field">
+            <label class="move-label">Objective</label>
+            <select class="move-select" id="mv-stage">${stageOpts}</select>
+          </div>
+          <div class="move-field">
+            <label class="move-label">Position</label>
+            <select class="move-select" id="mv-pos">${posOpts}</select>
+          </div>
+          <div class="move-field">
+            <label class="move-label">Requirement</label>
+            <select class="move-select" id="mv-ref" style="width:60%;">${reqOptsFor(initStage)}</select>
+          </div>`;
+      } else if (type === 'activity') {
+        bodyHTML = `
+          <div class="move-field">
+            <label class="move-label">Objective</label>
+            <select class="move-select" id="mv-stage">${stageOpts}</select>
+          </div>
+          <div class="move-field">
+            <label class="move-label">Requirement</label>
+            <select class="move-select" id="mv-req">${reqOptsFor(initStage)}</select>
+          </div>
+          <div class="move-field">
+            <label class="move-label">Position</label>
+            <select class="move-select" id="mv-pos">${posOpts}</select>
+          </div>
+          <div class="move-field">
+            <label class="move-label">Activity</label>
+            <select class="move-select" id="mv-ref" style="width:60%;">${actOptsFor(initStage, 0)}</select>
+          </div>`;
+      } else { // stage
+        bodyHTML = `
+          <div class="move-field">
+            <label class="move-label">Position</label>
+            <select class="move-select" id="mv-pos">${posOpts}</select>
+          </div>
+          <div class="move-field">
+            <label class="move-label">Objective</label>
+            <select class="move-select" id="mv-ref">${stageOpts}</select>
+          </div>`;
+      }
+
+      const scrim = document.createElement('div');
+      scrim.id = 'move-modal-scrim';
+      scrim.className = 'move-modal-scrim';
+      scrim.innerHTML = `
+        <div class="move-modal">
+          <div class="move-modal__head">
+            <h2>${titles[type]}</h2>
+            <button class="move-modal__close" onclick="document.getElementById('move-modal-scrim').remove()">×</button>
+          </div>
+          <div class="move-modal__body">${bodyHTML}</div>
+          <div class="move-modal__foot">
+            <vaadin-button theme="secondary" onclick="document.getElementById('move-modal-scrim').remove()">Cancel</vaadin-button>
+            <vaadin-button theme="primary" id="mv-confirm">Confirm</vaadin-button>
+          </div>
+        </div>`;
+
+      document.body.appendChild(scrim);
+      scrim.addEventListener('click', e => { if (e.target === scrim) scrim.remove(); });
+
+      // Dynamic re-population when stage changes
+      const stageSel = document.getElementById('mv-stage');
+      if (stageSel) {
+        stageSel.addEventListener('change', () => {
+          const si = parseInt(stageSel.value);
+          if (type === 'requirement') {
+            document.getElementById('mv-ref').innerHTML = reqOptsFor(si);
+          } else if (type === 'activity') {
+            const reqSel = document.getElementById('mv-req');
+            reqSel.innerHTML = reqOptsFor(si);
+            document.getElementById('mv-ref').innerHTML = actOptsFor(si, 0);
+          }
+        });
+      }
+      if (type === 'activity') {
+        document.getElementById('mv-req')?.addEventListener('change', () => {
+          const si = parseInt(document.getElementById('mv-stage').value);
+          const ri = parseInt(document.getElementById('mv-req').value);
+          document.getElementById('mv-ref').innerHTML = actOptsFor(si, ri);
+        });
+      }
+
+      // Confirm: perform the actual move
+      document.getElementById('mv-confirm').addEventListener('click', () => {
+        const pos     = document.getElementById('mv-pos')?.value || 'before';
+        const refIdx  = parseInt(document.getElementById('mv-ref')?.value ?? 0);
+
+        if (type === 'requirement') {
+          const tgtStage = parseInt(document.getElementById('mv-stage').value);
+          const [req] = stages[srcStageIdx].requirements.splice(srcReqIdx, 1);
+          const insertAt = pos === 'before' ? refIdx : refIdx + 1;
+          stages[tgtStage].requirements.splice(insertAt, 0, req);
+        } else if (type === 'activity') {
+          const tgtStage = parseInt(document.getElementById('mv-stage').value);
+          const tgtReq   = parseInt(document.getElementById('mv-req').value);
+          const [act] = stages[srcStageIdx].requirements[srcReqIdx].activities.splice(srcActIdx, 1);
+          const insertAt = pos === 'before' ? refIdx : refIdx + 1;
+          stages[tgtStage].requirements[tgtReq].activities.splice(insertAt, 0, act);
+        } else { // stage
+          const refStage = parseInt(document.getElementById('mv-ref').value);
+          const [stage] = stages.splice(srcStageIdx, 1);
+          const adjustedRef = refStage > srcStageIdx ? refStage - 1 : refStage;
+          const insertAt    = pos === 'before' ? adjustedRef : adjustedRef + 1;
+          stages.splice(insertAt, 0, stage);
+        }
+
+        scrim.remove();
+        renderStageList();
+      });
+    }
+
+    function _ctxMenu(e, menuId, items) {
+      e.stopPropagation();
+      const existing = document.getElementById(menuId);
+      if (existing) { existing.remove(); return; }
+      const btn  = e.currentTarget || e.target.closest('vaadin-button') || e.target;
+      const rect = btn.getBoundingClientRect();
+      const menu = document.createElement('div');
+      menu.id = menuId;
+      menu.style.cssText = `
+        position:fixed; top:${rect.bottom + 4}px; left:${rect.left - 120}px;
+        background:#fff; border:1px solid var(--lumo-contrast-10pct,#e3e5e8);
+        border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.12);
+        z-index:1200; min-width:180px; overflow:hidden; font-size:14px;
+      `;
+      items.forEach(({ label, fn, danger }) => {
+        const item = document.createElement('div');
+        item.textContent = label;
+        item.style.cssText = `padding:12px 20px;cursor:pointer;${danger ? 'color:var(--lumo-error-color,#d0021b);' : ''}`;
+        item.onmouseover = () => item.style.background = 'var(--lumo-shade-5pct,#f4f5f7)';
+        item.onmouseout  = () => item.style.background = '';
+        item.onclick     = () => { menu.remove(); fn(); };
+        menu.appendChild(item);
+      });
+      document.body.appendChild(menu);
+      // Clamp so menu stays on screen
+      const mr = menu.getBoundingClientRect();
+      if (mr.right > window.innerWidth - 8) menu.style.left = (window.innerWidth - mr.width - 8) + 'px';
+      if (mr.bottom > window.innerHeight - 8) menu.style.top = (rect.top - mr.height - 4) + 'px';
+      setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
+    }
+
+    function stageMenu(e, idx) {
+      _ctxMenu(e, 'stage-ctx-menu', [
+        { label: 'Move Objective', fn: () => showMoveModal('stage', idx) },
+        { label: 'Remove',     fn: () => { if (stages.length > 1) { stages.splice(idx, 1); renderStageList(); } }, danger: true },
+      ]);
+    }
+
+    function reqMoreMenu(e, stageIdx, reqIdx) {
+      _ctxMenu(e, 'req-ctx-menu', [
+        { label: 'Move Requirement', fn: () => showMoveModal('requirement', stageIdx, reqIdx) },
+        { label: 'Remove',           fn: () => { stages[stageIdx].requirements.splice(reqIdx, 1); renderStageList(); }, danger: true },
+      ]);
+    }
+
+    function actMoreMenu(e, stageIdx, reqIdx, actIdx) {
+      _ctxMenu(e, 'act-ctx-menu', [
+        { label: 'Move Activity', fn: () => showMoveModal('activity', stageIdx, reqIdx, actIdx) },
+        { label: 'Remove', fn: () => {
+          _markReqDirty(stageIdx, reqIdx);
+          stages[stageIdx].requirements[reqIdx].activities.splice(actIdx, 1);
+          renderStageList();
+        }, danger: true },
+      ]);
+    }
+
+    function stageAddMenu(e, idx, position) {
+      e.stopPropagation();
+      const existing = document.getElementById('stage-add-menu');
+      if (existing) existing.remove();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const menu = document.createElement('div');
+      menu.id = 'stage-add-menu';
+      menu.style.cssText = `
+        position:fixed; top:${rect.top}px; left:${rect.right + 6}px;
+        background:#fff; border:1px solid var(--lumo-contrast-10pct);
+        border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.12);
+        z-index:1000; min-width:210px; overflow:hidden; font-size:13px;
+      `;
+      const dir = position === 'above' ? 'Above' : 'Below';
+      const insertAt = position === 'above' ? idx : idx + 1;
+      const items = [
+        { label: `Add New Stage ${dir}`,      fn: () => insertNewStage(insertAt) },
+        { label: `Add Existing Stage ${dir}`, fn: () => insertNewStage(insertAt) },
+      ];
+      items.forEach(({ label, fn }) => {
+        const item = document.createElement('div');
+        item.textContent = label;
+        item.style.cssText = 'padding:10px 16px;cursor:pointer;';
+        item.onmouseover = () => item.style.background = 'var(--lumo-shade-5pct)';
+        item.onmouseout  = () => item.style.background = '';
+        item.onclick = () => { menu.remove(); fn(); };
+        menu.appendChild(item);
+      });
+      document.body.appendChild(menu);
+      setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
+      const scroller = document.querySelector('.builder-main');
+      const closeOnScroll = () => { menu.remove(); scroller.removeEventListener('scroll', closeOnScroll); };
+      scroller.addEventListener('scroll', closeOnScroll, { once: true });
+    }
+
+    function insertNewStage(atIdx) {
+      stages.splice(atIdx, 0, { name: 'New Stage', hours: 0, requirements: [] });
+      renderStageList();
+    }
+
+    function lpMoreMenu(e) {
+      e.stopPropagation();
+      const existing = document.getElementById('lp-more-menu');
+      if (existing) { existing.remove(); return; }
+      const btn = e.target.closest('vaadin-button') || e.target;
+      const rect = btn.getBoundingClientRect();
+      const menu = document.createElement('div');
+      menu.id = 'lp-more-menu';
+      menu.style.cssText = `
+        position:fixed; top:${rect.bottom + 4}px; right:${window.innerWidth - rect.right}px;
+        background:#fff; border:1px solid var(--lumo-contrast-10pct,#e3e5e8);
+        border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.12);
+        z-index:1000; min-width:220px; overflow:hidden; font-size:15px;
+      `;
+      [
+        { label: 'View Audit History', fn: () => showAuditHistory() },
+        { label: 'Delete Learning Path', fn: () => {}, danger: true },
+      ].forEach(({ label, fn, danger }) => {
+        const item = document.createElement('div');
+        item.textContent = label;
+        item.style.cssText = `padding:14px 20px;cursor:pointer;${danger ? 'color:var(--lumo-error-color,#d0021b);' : ''}`;
+        item.onmouseover = () => item.style.background = 'var(--lumo-shade-5pct,#f4f5f7)';
+        item.onmouseout  = () => item.style.background = '';
+        item.onclick = () => { menu.remove(); fn(); };
+        menu.appendChild(item);
+      });
+      document.body.appendChild(menu);
+      setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
+    }
+
+    function showAuditHistory() {
+      const rows = [
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Created',  date: '11/17/2025', scope: 'CreateLearningPath' },
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '12/3/2025',  scope: 'UpdateLearningPath' },
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '1/14/2026',  scope: 'UpdateLearningPath' },
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '2/1/2026',   scope: 'UpdateLearningPath' },
+      ];
+
+      const scrim = document.createElement('div');
+      scrim.className = 'audit-scrim';
+      scrim.innerHTML = `
+        <div class="audit-modal" style="position:relative;">
+          <button class="audit-close" onclick="this.closest('.audit-scrim').remove()" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <div class="audit-modal__head">
+            <h2>Learning Path Audit History</h2>
+            <p>This is a record of what changes have been made to this Learning Path</p>
+          </div>
+          <div class="audit-modal__body">
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>Username</th>
+                  <th>Action</th>
+                  <th>Date</th>
+                  <th>Scope</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(r => `
+                <tr>
+                  <td>
+                    <div style="font-weight:600;">${r.user}</div>
+                    <div style="font-size:12px;color:var(--lumo-secondary-text-color);">${r.email}</div>
+                  </td>
+                  <td>${r.action}</td>
+                  <td>${r.date}</td>
+                  <td><code style="background:var(--lumo-shade-5pct);padding:2px 6px;border-radius:4px;font-size:12px;">${r.scope}</code></td>
+                </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="audit-modal__foot">
+            <vaadin-button theme="secondary" onclick="this.closest('.audit-scrim').remove()">Refresh</vaadin-button>
+            <vaadin-button theme="primary" onclick="this.closest('.audit-scrim').remove()">Done</vaadin-button>
+          </div>
+        </div>
+      `;
+      scrim.addEventListener('click', (e) => { if (e.target === scrim) scrim.remove(); });
+      document.body.appendChild(scrim);
+    }
+
+    function toggleLPSettings(e) {
+      e.stopPropagation();
+      const existing = document.getElementById('lp-settings-panel');
+      if (existing) { existing.remove(); return; }
+
+      const btn = e.currentTarget;
+      const rect = btn.getBoundingClientRect();
+
+      const panel = document.createElement('div');
+      panel.id = 'lp-settings-panel';
+      panel.style.cssText = `
+        position:fixed; top:${rect.bottom + 8}px; right:${window.innerWidth - rect.right}px;
+        width:360px; background:#fff; border-radius:12px;
+        box-shadow:0 8px 32px rgba(0,0,0,0.18); z-index:1000;
+        padding:24px 24px 28px; font-family:'Open Sans',sans-serif; font-size:14px;
+      `;
+
+      panel.innerHTML = `
+        <div style="font-size:20px;font-weight:700;color:var(--lumo-body-text-color,#1a1a1a);margin-bottom:6px;">Objective Completion Settings</div>
+        <div style="font-size:13px;color:var(--lumo-secondary-text-color,#6a6f76);line-height:1.5;margin-bottom:20px;">Configure how learners complete Objectives in this Learning path</div>
+        <hr style="border:none;border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);margin-bottom:20px;">
+
+        <div style="font-weight:700;margin-bottom:10px;">Objective Completion Criteria</div>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;border-bottom:1px solid var(--lumo-contrast-10pct,#e3e5e8);">
+          <input type="radio" name="lp-criteria" value="all" checked
+            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
+          <span>Complete all stages</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;">
+          <input type="radio" name="lp-criteria" value="specific"
+            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
+          <span>Complete a specific number of stages</span>
+        </label>
+
+        <hr style="border:none;border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);margin:16px 0 20px;">
+
+        <div style="font-weight:700;margin-bottom:10px;">Objective Completion Order</div>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;border-bottom:1px solid var(--lumo-contrast-10pct,#e3e5e8);">
+          <input type="radio" name="lp-order" value="sequential" checked
+            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
+          <span>Sequential (Complete in listed order)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;">
+          <input type="radio" name="lp-order" value="any"
+            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
+          <span>Any Order</span>
+        </label>
+      `;
+
+      document.body.appendChild(panel);
+
+      // Close on outside click or scroll
+      setTimeout(() => document.addEventListener('click', () => panel.remove(), { once: true }), 10);
+      const scroller = document.querySelector('.builder-main');
+      if (scroller) {
+        const closeOnScroll = () => { panel.remove(); scroller.removeEventListener('scroll', closeOnScroll); };
+        scroller.addEventListener('scroll', closeOnScroll, { once: true });
+      }
+    }
+
+    function toggleRail() {
+      document.getElementById('builder-rail').classList.toggle('rail-collapsed');
+    }
+
+    function toggleStageCard(e, idx) {
+      const btn = e.target.closest('vaadin-button, button');
+      if (btn && !btn.classList.contains('stage-collapse-btn')) return;
+      if (e.target.closest('[contenteditable]')) return;
+      const card = e.currentTarget.closest('.stage-card');
+      const chevron = card.querySelector('.stage-chevron');
+      const isCollapsed = card.classList.toggle('stage-collapsed');
+      if (chevron) chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)';
+      if (isCollapsed) { _expandedStages.delete(idx); } else { _expandedStages.add(idx); }
+    }
+
+    function toggleReqCard(e) {
+      const btn = e.target.closest('vaadin-button, button');
+      if (btn && !btn.classList.contains('req-collapse-btn')) return;
+      const card = e.currentTarget.closest('.req-card');
+      const chevron = card.querySelector('.req-chevron');
+      const isCollapsed = card.classList.toggle('req-collapsed');
+      if (chevron) chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)';
+    }
+
+    function showReqSettings(e, stageIdx, reqIdx) {
+      e.stopPropagation();
+      const existing = document.getElementById('req-settings-panel');
+      if (existing) { existing.remove(); return; }
+
+      const req  = stages[stageIdx].requirements[reqIdx];
+      const btn  = e.currentTarget || e.target.closest('vaadin-button') || e.target;
+      const rect = btn.getBoundingClientRect();
+
+      // Snapshot before any change so Cancel can revert
+      if (!req.isNew) _snapshotReq(req);
+
+      const PANEL_H = 300;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const topPos = spaceBelow >= PANEL_H + 8
+        ? rect.bottom + 4
+        : Math.max(8, rect.top - PANEL_H - 4);
+
+      const panel = document.createElement('div');
+      panel.id = 'req-settings-panel';
+      panel.style.cssText = `
+        position:fixed; top:${topPos}px; left:${rect.left - 240}px;
+        background:#fff; border:1px solid var(--lumo-contrast-10pct,#e3e5e8);
+        border-radius:10px; box-shadow:0 6px 28px rgba(0,0,0,0.14);
+        z-index:1200; width:340px; font-family:inherit;
+      `;
+
+      const uid  = 'rqs-' + stageIdx + '-' + reqIdx;
+      const crit = req.criteria || 'all';
+      const ord  = req.order    || 'sequential';
+
+      panel.innerHTML = `
+        <div style="padding:18px 20px 14px;">
+          <div style="font-size:15px;font-weight:700;color:var(--lumo-body-text-color);margin-bottom:4px;">Activity Completion Settings</div>
+          <div style="font-size:13px;color:var(--lumo-secondary-text-color,#6a6f76);line-height:1.4;">Configure how learners complete Activities in this Requirement</div>
+        </div>
+        <div style="border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);"></div>
+        <div style="padding:16px 20px 0;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Activity Completion Criteria</div>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px;font-size:14px;">
+            <input type="radio" name="${uid}-criteria" value="all" ${crit === 'all' ? 'checked' : ''}
+              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
+            Complete all activities
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
+            <input type="radio" name="${uid}-criteria" value="specific" ${crit === 'specific' ? 'checked' : ''}
+              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
+            Complete a specific number of activities
+          </label>
+        </div>
+        <div style="border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);margin:16px 0 0;"></div>
+        <div style="padding:16px 20px 20px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Activity Completion Order</div>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px;font-size:14px;">
+            <input type="radio" name="${uid}-order" value="sequential" ${ord === 'sequential' ? 'checked' : ''}
+              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
+            Sequential (Complete in listed order)
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
+            <input type="radio" name="${uid}-order" value="any" ${ord === 'any' ? 'checked' : ''}
+              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
+            Any Order
+          </label>
+        </div>
+      `;
+
+      document.body.appendChild(panel);
+
+      // Stop panel-internal clicks from triggering the outside-click close handler
+      panel.addEventListener('click', ev => ev.stopPropagation());
+
+      // Wire radio changes → update model + show footer
+      panel.querySelectorAll(`[name="${uid}-criteria"]`).forEach(r =>
+        r.addEventListener('change', () => {
+          stages[stageIdx].requirements[reqIdx].criteria = r.value;
+          _markReqDirty(stageIdx, reqIdx);
+          renderStageList();
+        })
+      );
+      panel.querySelectorAll(`[name="${uid}-order"]`).forEach(r =>
+        r.addEventListener('change', () => {
+          stages[stageIdx].requirements[reqIdx].order = r.value;
+          _markReqDirty(stageIdx, reqIdx);
+          renderStageList();
+        })
+      );
+
+      // Clamp so panel doesn't go off-screen left
+      const panelRect = panel.getBoundingClientRect();
+      if (panelRect.left < 8) panel.style.left = '8px';
+
+      setTimeout(() => document.addEventListener('click', () => panel.remove(), { once: true }), 10);
+    }
+
+    function reqMenu(e, stageIdx) {
+      e.stopPropagation();
+      const existing = document.getElementById('req-ctx-menu');
+      if (existing) existing.remove();
+      const btn = e.target.closest('vaadin-button') || e.target;
+      const rect = btn.getBoundingClientRect();
+      const menu = document.createElement('div');
+      menu.id = 'req-ctx-menu';
+      menu.style.cssText = `
+        position:fixed; top:${rect.bottom + 4}px; left:${rect.left}px;
+        background:#fff; border:1px solid var(--lumo-contrast-10pct);
+        border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.12);
+        z-index:1000; min-width:220px; overflow:hidden; font-size:13px;
+      `;
+      const items = [
+        { label: 'Add Existing Requirement', fn: () => openRequirementPicker(stageIdx) },
+        { label: 'Create New Requirement',   fn: () => addRequirementToStage(stageIdx) },
+      ];
+      items.forEach(({ label, fn }) => {
+        const item = document.createElement('div');
+        item.textContent = label;
+        item.style.cssText = 'padding:10px 16px;cursor:pointer;';
+        item.onmouseover = () => item.style.background = 'var(--lumo-shade-5pct)';
+        item.onmouseout  = () => item.style.background = '';
+        item.onclick = () => { menu.remove(); fn(); };
+        menu.appendChild(item);
+      });
+      document.body.appendChild(menu);
+      setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
+    }
+
+    function updateStats() {
+      const stageCount = stages.length;
+      const reqCount   = stages.reduce((s, st) => s + st.requirements.length, 0);
+      const actCount   = stages.reduce((s, st) => st.requirements.reduce((r, req) => r + req.activities.length, s), 0);
+      const hours      = stages.reduce((s, st) => s + st.hours, 0);
+      const stagesEl = document.getElementById('stat-stages');
+      const reqsEl   = document.getElementById('stat-reqs');
+      const actsEl   = document.getElementById('stat-acts');
+      const hoursEl  = document.getElementById('stat-hours');
+      if (stagesEl) stagesEl.textContent = `${stageCount} Objective${stageCount !== 1 ? 's' : ''}`;
+      if (reqsEl)   reqsEl.textContent   = `${reqCount} Requirement${reqCount !== 1 ? 's' : ''}`;
+      if (actsEl)   actsEl.textContent   = `${actCount} Activit${actCount !== 1 ? 'ies' : 'y'}`;
+      if (hoursEl)  hoursEl.textContent  = formatDuration(hours);
+    }
+
+    // ── Stage structure rail ───────────────────────────────────
+    function renderRail() {
+      const list = document.getElementById('rail-list');
+      if (!list) return;
+      list.innerHTML = '';
+      stages.forEach((stage, i) => {
+        const item = document.createElement('div');
+        item.className = 'rail-item';
+        item.innerHTML = `<span class="rail-num">${i + 1}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${stage.name || 'Untitled Stage'}</span>`;
+        item.addEventListener('click', () => {
+          const cards = document.querySelectorAll('.stage-card');
+          if (cards[i]) cards[i].scrollIntoView({ behavior:'smooth', block:'start' });
+        });
+        list.appendChild(item);
+      });
+    }
+
+    // ── Confirmation screen ────────────────────────────────────
+    function buildConfirmationScreen(title, desc, stageCount, reqCount, actCount, hours) {
+      const type = currentBuilderType;
+
+      document.getElementById('confirm-title').textContent =
+        type === 'learning-path' ? 'Learning Path Created Successfully!' : 'Qualification Created Successfully!';
+
+      document.getElementById('btn-confirm-manage').textContent =
+        type === 'learning-path' ? 'Manage Learning Paths' : 'Manage Qualifications';
+
+      document.getElementById('btn-confirm-assign').textContent =
+        type === 'learning-path' ? 'Assign this Learning Path' : 'Assign this Qualification';
+
+      document.getElementById('confirm-lp-name').textContent = title;
+      document.getElementById('confirm-lp-desc').textContent =
+        desc || 'No description provided.';
+
+      const statsEl = document.getElementById('confirm-stats');
+      const hrsDisplay = formatDuration(hours);
+      statsEl.innerHTML = `
+        <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${hrsDisplay}</span>
+        <span class="stat-pill"><i class="fa-solid fa-layer-group"></i> ${stageCount} Stage${stageCount !== 1 ? 's' : ''}</span>
+        <span class="stat-pill"><i class="fa-solid fa-list-check"></i> ${reqCount} Requirement${reqCount !== 1 ? 's' : ''}</span>
+        <span class="stat-pill"><i class="fa-solid fa-play"></i> ${actCount} Activit${actCount !== 1 ? 'ies' : 'y'}</span>
+      `;
+    }
+
+    // ── Table render ──────────────────────────────────────────
+    function renderManageTable(data) {
+      data = data || QUAL_DATA;
+      const tbody = document.getElementById('qual-tbody');
+      tbody.innerHTML = data.map((item, idx) => {
+        const isLP   = item.type === 'learning-path';
+        const icon   = isLP ? 'fa-book-open' : 'fa-graduation-cap';
+        const label  = isLP ? 'Learning Path' : 'Qualification';
+        const active = item.status === 'published';
+        const locHtml = item.location
+          ? `<span style="color:#9ca3af;">.\\</span><a class="mgt-loc-link" href="#">${item.location}</a>`
+          : '<span style="color:#9ca3af;">.\\</span>';
+        return `
+          <tr>
+            <td class="mgt-col-actions">
+              <div class="mgt-row-actions">
+                <button class="mgt-icon-btn blue" title="Edit" onclick="openBuilder('${item.type}', QUAL_DATA[${idx}])">
+                  <i class="fa-solid fa-pencil" style="font-size:13px;"></i>
+                </button>
+                <button class="mgt-icon-btn" title="Delete">
+                  <i class="fa-solid fa-trash" style="font-size:13px;color:#6b7280;"></i>
+                </button>
+              </div>
+            </td>
+            <td class="mgt-col-name">
+              <div class="mgt-name-wrap">
+                <i class="fa-solid ${icon}" style="font-size:13px;color:#6b7280;flex-shrink:0;"></i>
+                <span class="mgt-name-link" onclick="openBuilder('${item.type}', QUAL_DATA[${idx}])">${item.name}</span>
+              </div>
+            </td>
+            <td class="mgt-col-type">${label}</td>
+            <td class="mgt-col-comp">All Items</td>
+            <td class="mgt-col-order">Any Order</td>
+            <td class="mgt-col-reqs" style="display:table-cell;">
+              <span style="display:flex;align-items:center;gap:4px;">
+                <i class="fa-solid fa-award" style="font-size:11px;color:#6b7280;"></i>
+                ${item.requirements}
+              </span>
+            </td>
+            <td class="mgt-col-active">
+              ${active
+                ? '<i class="fa-solid fa-circle-check mgt-active-yes" title="Active"></i>'
+                : '<i class="fa-regular fa-circle mgt-active-no" title="Inactive"></i>'}
+            </td>
+            <td class="mgt-col-loc">${locHtml}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function focusManageSearch() {
+      // no-op in prototype — search bar is in the toolbar
+    }
+
+    // ── DOMContentLoaded wiring ────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      renderManageTable();
+      // Hide the shell subheader on initial load (table page is active)
+      window.parent.postMessage({ type: 'shell:subheader', show: false }, '*');
+
+      document.getElementById('btn-builder-cancel')
+        .addEventListener('click', () => confirmLeaveBuilder(() => showScreen('manage')));
+
+      document.getElementById('btn-builder-save')
+        .addEventListener('click', () => {
+          const title  = document.getElementById('lp-title').value || 'Untitled';
+          const desc   = document.getElementById('lp-description').value || '';
+          const stageCount = stages.length;
+          const reqCount   = stages.reduce((s, st) => s + st.requirements.length, 0);
+          const actCount   = stages.reduce((s, st) => st.requirements.reduce((r, req) => r + req.activities.length, s), 0);
+          const hours      = stages.reduce((s, st) => s + st.hours, 0);
+
+          // Persist to localStorage for Training tab
+          const flatReqs = [];
+          stages.forEach(stage => {
+            stage.requirements.forEach(req => {
+              flatReqs.push({
+                name: req.name,
+                activities: req.activities.map(a => ({
+                  name: a.name,
+                  type: a.type || 'Computer Based',
+                  hours: a.hours || 0,
+                })),
+              });
+            });
+          });
+          localStorage.setItem('ct_training_plan', JSON.stringify({
+            title,
+            desc,
+            type: currentBuilderType,
+            savedAt: new Date().toISOString(),
+            requirements: flatReqs,
+            totalHours: hours,
+          }));
+
+          buildConfirmationScreen(title, desc, stageCount, reqCount, actCount, hours);
+          showScreen('confirm');
+        });
+
+      document.getElementById('btn-add-stage').addEventListener('click', () => {
+        stages.push({ name: `Stage ${stages.length + 1}`, hours: 0, requirements: [] });
+        renderStageList();
+        const stageList = document.getElementById('stage-list');
+        if (stageList.lastElementChild) stageList.lastElementChild.scrollIntoView({ behavior:'smooth' });
+      });
+
+      document.getElementById('btn-confirm-manage')
+        .addEventListener('click', () => showScreen('manage'));
+
+      document.getElementById('btn-confirm-assign')
+        .addEventListener('click', () => {
+          window.parent.postMessage({ type: 'nav:training' }, '*');
+        });
+    });
+
+    // ── LP Creation Choice Modal ──────────────────────────────────────────────
+    function showLPChoiceModal() {
+      document.getElementById('lp-choice-scrim')?.remove();
+      const scrim = document.createElement('div');
+      scrim.id = 'lp-choice-scrim';
+      scrim.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;font-family:"Open Sans",sans-serif;';
+      scrim.innerHTML = `
+        <div style="background:#fff;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,0.22);width:100%;max-width:680px;padding:36px 36px 32px;position:relative;">
+          <button id="lp-choice-close" style="position:absolute;top:20px;right:22px;background:none;border:none;cursor:pointer;font-size:22px;color:#9ca3af;line-height:1;padding:4px 6px;" title="Close">×</button>
+          <h2 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;">Create a Learning Path</h2>
+          <p style="font-size:14px;color:#6b7280;margin:0 0 28px;">Choose how you'd like to build your learning path.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <!-- Build from Scratch -->
+            <button id="lp-choice-scratch" style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:28px 20px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;font-family:inherit;"
+              onmouseover="this.style.borderColor='#3b82f6';this.style.boxShadow='0 4px 16px rgba(59,130,246,0.12)'"
+              onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+              <div style="width:64px;height:64px;background:#f3f4f6;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </div>
+              <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">Build from Scratch</div>
+              <p style="font-size:13px;color:#6b7280;line-height:1.55;margin:0;">Start from a blank template. Define stages, requirements, and activities yourself.</p>
+            </button>
+            <!-- Build with AI -->
+            <button id="lp-choice-ai" style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:28px 20px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;font-family:inherit;"
+              onmouseover="this.style.borderColor='#00639a';this.style.boxShadow='0 4px 16px rgba(0,99,154,0.12)'"
+              onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
+              <div style="width:64px;height:64px;background:#cee5ff;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00639a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15 3l1.5 3 3 1.5-3 1.5L15 12l-1.5-3-3-1.5 3-1.5L15 3z"/>
+                  <path d="M5 8l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/>
+                  <path d="M12 16l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/>
+                </svg>
+              </div>
+              <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">Build with AI</div>
+              <p style="font-size:13px;color:#6b7280;line-height:1.55;margin:0;">Answer a few questions and AI will generate a structured learning path for you to refine.</p>
+            </button>
+          </div>
+        </div>`;
+      document.body.appendChild(scrim);
+      scrim.querySelector('#lp-choice-close').addEventListener('click', () => scrim.remove());
+      scrim.addEventListener('click', (e) => { if (e.target === scrim) scrim.remove(); });
+      scrim.querySelector('#lp-choice-scratch').addEventListener('click', () => {
+        scrim.remove();
+        openBuilder('learning-path');
+      });
+      scrim.querySelector('#lp-choice-ai').addEventListener('click', () => {
+        scrim.remove();
+        showAIIntakeModal();
+      });
+    }
+
+    // ── AI Intake Modal ───────────────────────────────────────────────────────
+    function showAIIntakeModal(prefill = {}) {
+      document.getElementById('ai-intake-scrim')?.remove();
+
+      const TOPICS = ['Safety','Compliance','Technical Skills','Soft Skills'];
+      const PILL_KEYWORDS = {
+        'Safety':          ['safety','hazard','osha','accident','ppe','emergency','injury','risk','protect'],
+        'Compliance':      ['complian','regulatory','regulation','legal','audit','policy','standard','certif'],
+        'Technical Skills':['technician','technical','operator','equipment','machine','machinist','operation','maintenance','mechanic','repair','tool','engineer','fabricat','assembl','weld'],
+        'Soft Skills':     ['communicat','present','report','verbal','written','document','brief','speak','listen','team','collaborat','cooperat','group','together','partner','peer','colleague','conflict','resolv','mediat','disput','negotiat','disagree','tension','lead','manager','supervisor','coach','mentor','oversee','direct','management'],
+      };
+
+      const activePills  = new Set(); // auto-detected from textarea text
+      const customSkills = new Set(); // user-added custom skills
+
+      // Pill HTML — read-only indicators driven by text detection + "Add skill" button
+      const pillsHTML = TOPICS.map(t =>
+        `<span class="ai-pill" data-topic="${t}" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:400;color:#3f4852;border:1px solid rgba(111,120,131,0.3);background:transparent;font-family:'Nunito Sans',sans-serif;pointer-events:none;">${t}</span>`
+      ).join('') +
+      `<button id="ai-add-skill-btn" style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border:1px dashed rgba(111,120,131,0.4);border-radius:99px;background:transparent;font-size:12px;font-family:'Nunito Sans',sans-serif;color:#73828c;cursor:pointer;transition:border-color 0.15s,color 0.15s;"><span class="material-symbols-outlined" style="font-size:13px;">add</span>Add skill</button>`;
+
+      const scrim = document.createElement('div');
+      scrim.id = 'ai-intake-scrim';
+      scrim.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(24,28,30,0.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
+
+      scrim.innerHTML = `
+        <section class="bg-surface-white w-full rounded-xl shadow-xl border border-outline-variant flex flex-col overflow-hidden max-w-[1024px]" style="height:88vh;font-family:'Nunito Sans',sans-serif;">
+
+          <!-- Header -->
+          <header style="padding:12px 32px;background:#f7fafd;border-bottom:1px solid #e0e3e6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:36px;height:36px;border-radius:8px;background:#cee5ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span class="material-symbols-outlined" style="font-size:20px;color:#004a76;font-variation-settings:'FILL' 1;">auto_awesome</span>
+              </div>
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+                  <h1 style="margin:0;font-size:18px;font-weight:700;color:#181c1e;line-height:1.2;font-family:'Nunito Sans',sans-serif;">Generate a Learning Path</h1>
+                  <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:rgba(0,99,154,0.08);color:#00639a;font-size:10px;font-weight:700;border-radius:99px;letter-spacing:0.06em;text-transform:uppercase;border:1px solid rgba(0,99,154,0.18);flex-shrink:0;">
+                    <span class="material-symbols-outlined" style="font-size:11px;font-variation-settings:'FILL' 1;">bolt</span>
+                    Vector AI
+                  </span>
+                </div>
+                <p style="margin:0;font-size:13px;color:#73828c;line-height:1.4;font-family:'Nunito Sans',sans-serif;">Describe the role and goals to generate a structured curriculum.</p>
+              </div>
+            </div>
+            <button id="ai-intake-close" style="padding:6px;background:none;border:none;cursor:pointer;color:#73828c;border-radius:99px;display:flex;align-items:center;justify-content:center;" class="hover:bg-surface-container-high transition-colors">
+              <span class="material-symbols-outlined" style="font-size:22px;">close</span>
+            </button>
+          </header>
+
+          <!-- Main Content -->
+          <div class="flex-1 overflow-hidden flex flex-col" style="min-height:0;">
+            <div class="px-md pt-sm pb-sm flex flex-col gap-sm flex-1" style="min-height:0;overflow:hidden;">
+
+              <!-- Role + Timeline -->
+              <div class="grid grid-cols-2 gap-md flex-shrink-0">
+                <div class="flex flex-col gap-sm">
+                  <label class="font-label-md text-label-md text-on-surface-variant">Target Role</label>
+                  <input id="ai-role" type="text" placeholder="e.g., Factory Worker to Team Lead"
+                    class="w-full h-10 px-md border border-outline-variant rounded-lg outline-none transition-all font-body-md text-body-sm"
+                    style="font-family:inherit;" />
+                </div>
+                <div class="flex flex-col gap-sm">
+                  <label class="font-label-md text-label-md text-on-surface-variant">Target Timeline</label>
+                  <input id="ai-timeline" type="text" placeholder="e.g., 6–12 months"
+                    class="w-full h-10 px-md border border-outline-variant rounded-lg outline-none transition-all font-body-md text-body-sm"
+                    style="font-family:inherit;" />
+                </div>
+              </div>
+
+              <!-- Description + Suggestions -->
+              <div class="flex flex-col gap-sm flex-1" style="min-height:0;">
+                <p class="font-label-md text-label-md text-on-surface-variant flex-shrink-0" style="font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">Describe your Learning Goals</p>
+                <div id="ai-input-area" class="flex gap-md flex-1" style="min-height:0;">
+
+                  <!-- Textarea column -->
+                  <div class="flex-1 flex flex-col" style="min-height:0;position:relative;">
+                    <button id="ai-show-sugg-btn"
+                      style="display:none;position:absolute;top:0;right:0;z-index:1;align-items:center;gap:4px;padding:3px 10px;background:rgba(30,167,253,0.1);color:#00639a;border:1px solid rgba(30,167,253,0.2);border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.05em;text-transform:uppercase;">
+                      <span class="material-symbols-outlined" style="font-size:12px;font-variation-settings:'FILL' 1;">auto_awesome</span>
+                      Suggestions
+                    </button>
+                    <textarea id="ai-goals"
+                      class="flex-1 w-full p-md border border-outline-variant rounded-xl outline-none transition-all resize-none font-body-md text-body-sm leading-relaxed"
+                      style="min-height:100px;font-family:inherit;scrollbar-width:thin;scrollbar-color:#bec7d3 transparent;overflow-y:auto;"
+                      placeholder="Describe the role responsibilities, specific tools, and desired outcomes..."></textarea>
+                    <div class="mt-sm flex-shrink-0" style="display:flex;align-items:center;gap:8px;">
+                      <label for="ai-pdf-input"
+                        class="flex items-center gap-2 px-md border border-outline-variant text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors"
+                        style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;height:44px;">
+                        <span class="material-symbols-outlined" style="font-size:20px;">attach_file</span>
+                        Upload Job Description
+                      </label>
+                      <input id="ai-pdf-input" type="file" accept=".pdf,.doc,.docx,.txt" style="display:none;" />
+                      <span id="ai-pdf-name" class="font-body-sm text-text-muted" style="font-size:12px;"></span>
+                    </div>
+                  </div>
+
+                  <!-- Suggestions sidebar -->
+                  <aside id="ai-suggestions-col" class="bg-surface-container-low rounded-xl p-sm border border-outline-variant/30 flex flex-col gap-sm" style="width:300px;flex-shrink:0;display:flex;min-height:0;height:100%;">
+                    <div class="flex items-center justify-between border-b border-outline-variant/30 pb-sm flex-shrink-0" style="display:flex;align-items:center;justify-content:space-between;">
+                      <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2 uppercase tracking-wide" style="display:flex;align-items:center;gap:8px;">
+                        <span class="material-symbols-outlined text-primary" style="font-size:16px;font-variation-settings:'FILL' 1;">auto_awesome</span>
+                        Suggestions<span id="ai-sugg-topic" style="text-transform:none;color:#00639a;font-weight:600;letter-spacing:0;font-size:11px;margin-left:4px;"></span>
+                      </span>
+                      <button id="ai-hide-sugg-btn"
+                        class="text-text-muted hover:text-on-surface transition-colors font-label-sm"
+                        style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;display:flex;align-items:center;gap:3px;font-family:inherit;letter-spacing:0.02em;">
+                        Hide
+                        <span class="material-symbols-outlined" style="font-size:14px;">chevron_right</span>
+                      </button>
+                    </div>
+                    <div id="ai-suggestion-cards" class="flex flex-col gap-sm flex-1" style="min-height:0;overflow:hidden;">
+                      <!-- populated by renderSuggestions() -->
+                    </div>
+                  </aside>
+
+                </div>
+              </div>
+
+              <!-- Detected Skills -->
+              <div style="border-top:1px solid #e0e3e6;padding-top:10px;flex-shrink:0;display:flex;flex-direction:column;gap:7px;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span class="material-symbols-outlined" style="font-size:14px;color:#73828c;">psychology</span>
+                  <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#73828c;">Detected skills</span>
+                </div>
+                <div id="ai-pills-row" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${pillsHTML}</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- More info panel (hidden) -->
+          <div id="ai-more-info-panel" style="display:none;" class="px-xl pb-lg bg-surface-bright border-t border-outline-variant">
+            <div class="p-md bg-surface-container-low rounded-lg border border-outline-variant/30 font-body-sm text-on-surface-variant leading-relaxed" style="font-size:12px;">
+              <strong class="text-on-surface block mb-1">About Vector AI Recommendations</strong>
+              Vector AI analyzes your role description and learning goals to suggest a structured learning path. Recommendations are based on common industry patterns and are a starting framework — not a final curriculum. Review all generated stages, requirements, and activities before publishing to ensure alignment with your organization's specific needs and compliance standards.
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <footer class="px-xl py-sm bg-surface-bright border-t border-outline-variant flex items-center justify-between flex-shrink-0" style="display:flex;align-items:center;justify-content:space-between;">
+            <div class="flex items-start gap-2" style="display:flex;align-items:flex-start;gap:8px;max-width:480px;">
+              <span class="material-symbols-outlined text-text-muted mt-0.5" style="font-size:18px;flex-shrink:0;">info</span>
+              <p class="font-body-sm text-text-muted leading-relaxed" style="font-size:12px;">
+                Vector AI content is a starting point. Review recommendations before publishing to your team.
+                <button id="ai-more-info-btn" class="text-primary hover:underline font-label-sm" style="background:none;border:none;cursor:pointer;font-size:12px;color:#00639a;font-family:inherit;">Learn more</button>
+              </p>
+            </div>
+            <div class="flex items-center gap-md" style="display:flex;align-items:center;gap:16px;">
+              <button id="ai-intake-cancel"
+                class="px-lg border border-outline-variant text-secondary font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-all"
+                style="height:44px;background:transparent;cursor:pointer;font-family:inherit;">
+                Cancel
+              </button>
+              <button id="ai-intake-generate"
+                class="px-lg bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-all flex items-center gap-2"
+                style="height:44px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;">
+                <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">bolt</span>
+                Generate Path
+              </button>
+            </div>
+          </footer>
+
+        </section>`;
+
+      document.body.appendChild(scrim);
+
+      // ── Pill helpers ──────────────────────────────────────────────────────────
+      function renderPill(topic) {
+        const pill = scrim.querySelector(`.ai-pill[data-topic="${CSS.escape(topic)}"]`);
+        if (!pill) return;
+        const isActive  = activePills.has(topic);
+        const isPrimary = isActive && topic === _primaryTopic;
+
+        if (isPrimary) {
+          pill.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;background:rgba(0,99,154,0.08);color:#00639a;border:1px solid rgba(0,99,154,0.25);pointer-events:none;font-family:'Nunito Sans',sans-serif;";
+          pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1;">auto_awesome</span>${topic}`;
+        } else if (isActive) {
+          pill.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;background:#f0fdf4;color:#15803d;border:1px solid rgba(21,128,61,0.2);pointer-events:none;font-family:'Nunito Sans',sans-serif;";
+          pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1;">check_circle</span>${topic}`;
+        } else {
+          pill.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:400;color:#3f4852;border:1px solid rgba(111,120,131,0.3);background:transparent;pointer-events:none;font-family:'Nunito Sans',sans-serif;";
+          pill.innerHTML = topic;
+        }
+      }
+
+      function setPillActive(topic, active, isPrimary) {
+        if (active) activePills.add(topic); else activePills.delete(topic);
+        if (isPrimary && active) _primaryTopic = topic;
+        renderPill(topic);
+      }
+
+      // ── Auto-detect from textarea (primary = topic of earliest keyword match) ──
+      let _primaryTopic = null;
+      function findPrimaryTopic(text) {
+        const lower = text.toLowerCase();
+        let primary = null;
+        let primaryPos = Infinity;
+        for (const topic of TOPICS) {
+          for (const kw of (PILL_KEYWORDS[topic] || [])) {
+            const pos = lower.indexOf(kw);
+            if (pos >= 0 && pos < primaryPos) { primaryPos = pos; primary = topic; }
+          }
+        }
+        return primary;
+      }
+      function detectFromText(text) {
+        _primaryTopic = findPrimaryTopic(text);
+        const lower = text.toLowerCase();
+        TOPICS.forEach(topic => {
+          const keywords = PILL_KEYWORDS[topic] || [];
+          const matched  = keywords.some(kw => lower.includes(kw));
+          if (matched) activePills.add(topic); else activePills.delete(topic);
+          renderPill(topic);
+        });
+      }
+
+      // ── Suggestion panel data ─────────────────────────────────────────────────
+      const DEFAULT_SUGGESTIONS = [
+        'I want to transition from a floor technician to a team lead within 12 months, focusing on leadership, safety awareness, and compliance.',
+        'Help me build a learning path for equipment safety, hazard identification, and OSHA compliance requirements for my current operator role.',
+        "I'm working toward a project manager position and need to develop communication, teamwork, and strategic decision-making skills.",
+      ];
+
+      // Suggestions are phrased as job-description sentences the user would write
+      const TOPIC_COMPLETIONS = {
+        'Safety': [
+          'Employees must be aware of OSHA 30-level requirements and complete site-specific safety orientation before any hands-on work.',
+          'Workers are expected to identify and report workplace hazards immediately and know how to access Material Safety Data Sheets (MSDS).',
+          'The role requires correct use of all personal protective equipment (PPE) including respirators, hard hats, and safety harnesses.',
+          'All personnel must be trained in emergency evacuation procedures, fire suppression, and first aid response protocols.',
+        ],
+        'Compliance': [
+          'Employees need to be aware of OSHA 30-level regulations and pass a regulatory knowledge assessment on an annual basis.',
+          'Staff are expected to maintain accurate training records and supporting documentation to pass internal and external audits.',
+          'Workers must be familiar with all applicable federal and state compliance requirements relevant to their job function.',
+          'The role requires completing mandatory compliance modules and acknowledging updated policy changes in writing each quarter.',
+        ],
+        'Technical Skills': [
+          'Operators must demonstrate proficiency in machine startup, shutdown, and preventive maintenance procedures per SOPs.',
+          'Workers need to interpret technical drawings, schematics, and equipment manuals relevant to their assigned systems.',
+          'Employees are expected to troubleshoot equipment malfunctions and escalate persistent issues to the maintenance team.',
+          'The role requires calibrating measurement tools and maintaining equipment logs in accordance with quality standards.',
+        ],
+        'Soft Skills': [
+          'Supervisors must facilitate daily team huddles, communicate shift goals clearly, and follow up on action items before the next shift.',
+          'Employees are expected to communicate shift handoffs, safety concerns, and production updates clearly and in a timely manner.',
+          'Workers must contribute positively to team culture by sharing knowledge, mentoring peers, and approaching conflict with a solution-focused mindset.',
+          'The role requires preparing written incident reports, shift logs, and status summaries, and presenting operational data to cross-functional teams.',
+        ],
+      };
+
+      // Returns { mode, topic, items } — suggests prompts for skills NOT yet covered
+      function getSuggestions() {
+        const ta = scrim.querySelector('#ai-goals');
+        const hasText = ta && ta.value.trim().length >= 10;
+
+        if (!hasText) {
+          return { mode: 'starter', topic: null, items: DEFAULT_SUGGESTIONS.map(t => ({ topic: null, text: t })) };
+        }
+
+        const missing = TOPICS.filter(t => !activePills.has(t));
+        if (missing.length === 0) {
+          return { mode: 'complete', topic: null, items: [] };
+        }
+
+        // One card per missing topic (up to 3), then fill from secondary sentences
+        const items = missing.slice(0, 3).map(t => ({ topic: t, text: TOPIC_COMPLETIONS[t][0] }));
+        if (items.length < 3 && missing.length > 0) {
+          const extra = TOPIC_COMPLETIONS[missing[0]];
+          for (let i = 1; i < extra.length && items.length < 3; i++) {
+            items.push({ topic: missing[0], text: extra[i] });
+          }
+        }
+        return { mode: 'missing', topic: missing[0], items };
+      }
+
+      function renderSuggestions(result) {
+        const topicLabel = scrim.querySelector('#ai-sugg-topic');
+        const container  = scrim.querySelector('#ai-suggestion-cards');
+        if (!container) return;
+
+        if (result.mode === 'complete') {
+          if (topicLabel) topicLabel.textContent = '';
+          container.innerHTML = `
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px 16px;text-align:center;">
+              <span class="material-symbols-outlined" style="font-size:30px;color:#15803d;font-variation-settings:'FILL' 1;">task_alt</span>
+              <p style="font-size:13px;font-weight:700;color:#181c1e;margin:0;font-family:'Nunito Sans',sans-serif;">All skill areas covered</p>
+              <p style="font-size:12px;color:#73828c;margin:0;line-height:1.5;font-family:'Nunito Sans',sans-serif;">Your description covers all four areas. You're ready to generate a path.</p>
+            </div>`;
+          return;
+        }
+
+        const primaryMissing = result.items.find(i => i.topic)?.topic;
+        if (topicLabel) topicLabel.textContent = (result.mode === 'missing' && primaryMissing) ? ` · ${primaryMissing}` : '';
+
+        container.innerHTML = result.items.map((s, i) => {
+          const tag = s.topic
+            ? `<span style="display:inline-block;padding:1px 7px;background:rgba(0,99,154,0.08);color:#00639a;font-size:10px;font-weight:700;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px;font-family:'Nunito Sans',sans-serif;">${s.topic}</span>`
+            : '';
+          return `<button class="ai-sugg-card" data-index="${i}"
+            style="width:100%;text-align:left;background:#fff;border:1px solid #e0e3e6;border-radius:8px;cursor:pointer;font-family:'Nunito Sans',sans-serif;padding:8px 10px;flex-shrink:0;transition:border-color 0.15s,box-shadow 0.15s;">
+            ${tag}<p style="font-size:12px;line-height:1.45;margin:0;color:#2e3438;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.text}</p>
+          </button>`;
+        }).join('');
+
+        container.querySelectorAll('.ai-sugg-card').forEach(btn => {
+          btn.addEventListener('mouseover', () => { btn.style.borderColor = 'rgba(0,99,154,0.4)'; btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; });
+          btn.addEventListener('mouseout',  () => { btn.style.borderColor = '#e0e3e6'; btn.style.boxShadow = 'none'; });
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.index);
+            const ta  = scrim.querySelector('#ai-goals');
+            const cur = ta.value.trimEnd();
+            ta.value  = cur + (cur ? ' ' : '') + result.items[idx].text;
+            ta.focus();
+            detectFromText(ta.value);
+            renderSuggestions(getSuggestions());
+          });
+        });
+      }
+
+      // Initialize suggestions
+      renderSuggestions(getSuggestions());
+
+      // ── Textarea input ────────────────────────────────────────────────────────
+      scrim.querySelector('#ai-goals').addEventListener('input', (e) => {
+        detectFromText(e.target.value);
+        renderSuggestions(getSuggestions());
+      });
+
+      // ── PDF upload simulation ─────────────────────────────────────────────────
+      const pdfInput = scrim.querySelector('#ai-pdf-input');
+      const pdfName  = scrim.querySelector('#ai-pdf-name');
+      pdfInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        pdfName.textContent = 'Scanning…';
+        pdfName.style.color = '#00639a';
+        const shuffled = [...TOPICS].sort(() => Math.random() - 0.5);
+        const count = Math.floor(Math.random() * 2) + 4;
+        let i = 0;
+        const interval = setInterval(() => {
+          if (i >= count) {
+            clearInterval(interval);
+            pdfName.textContent = file.name;
+            pdfName.style.color = '#15803d';
+            // Infer primary topic from first activated pill if textarea didn't already set one
+            if (!_primaryTopic && activePills.size > 0) {
+              _primaryTopic = [...activePills][0];
+              setPillActive(_primaryTopic, true, true);
+            }
+            renderSuggestions(getSuggestions());
+            return;
+          }
+          setPillActive(shuffled[i], true, false);
+          i++;
+        }, 280);
+      });
+
+      // ── Hide / show suggestions ───────────────────────────────────────────────
+      scrim.querySelector('#ai-hide-sugg-btn').addEventListener('click', () => {
+        scrim.querySelector('#ai-suggestions-col').style.display = 'none';
+        scrim.querySelector('#ai-show-sugg-btn').style.display = 'inline-flex';
+      });
+      scrim.querySelector('#ai-show-sugg-btn').addEventListener('click', () => {
+        scrim.querySelector('#ai-suggestions-col').style.display = 'flex';
+        scrim.querySelector('#ai-show-sugg-btn').style.display = 'none';
+      });
+
+      // ── More info toggle ──────────────────────────────────────────────────────
+      scrim.querySelector('#ai-more-info-btn').addEventListener('click', () => {
+        const panel = scrim.querySelector('#ai-more-info-panel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      });
+
+      // ── Close / cancel ────────────────────────────────────────────────────────
+      scrim.querySelector('#ai-intake-close').addEventListener('click', () => scrim.remove());
+      scrim.querySelector('#ai-intake-cancel').addEventListener('click', () => scrim.remove());
+      scrim.addEventListener('click', (e) => { if (e.target === scrim) scrim.remove(); });
+
+      // ── Custom skill: "Add skill" button ──────────────────────────────────────
+      function createAddBtn() {
+        const b = document.createElement('button');
+        b.id = 'ai-add-skill-btn';
+        b.style.cssText = "display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border:1px dashed rgba(111,120,131,0.4);border-radius:99px;background:transparent;font-size:12px;font-family:'Nunito Sans',sans-serif;color:#73828c;cursor:pointer;transition:border-color 0.15s,color 0.15s;";
+        b.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;">add</span>Add skill`;
+        return b;
+      }
+
+      function attachAddSkillBtn() {
+        const btn = scrim.querySelector('#ai-add-skill-btn');
+        if (!btn) return;
+        btn.addEventListener('mouseenter', () => { btn.style.borderColor = 'rgba(0,99,154,0.45)'; btn.style.color = '#00639a'; });
+        btn.addEventListener('mouseleave', () => { btn.style.borderColor = 'rgba(111,120,131,0.4)'; btn.style.color = '#73828c'; });
+        btn.addEventListener('click', () => {
+          const pillsRow = scrim.querySelector('#ai-pills-row');
+          const widget = document.createElement('span');
+          widget.style.cssText = "display:inline-flex;align-items:center;gap:4px;padding:3px 4px 3px 12px;border:1px solid #00639a;border-radius:99px;background:rgba(0,99,154,0.05);";
+          widget.innerHTML = `<input id="ai-custom-skill-input" type="text" placeholder="Skill name" maxlength="40"
+            style="border:none;outline:none;background:transparent;font-size:12px;font-family:'Nunito Sans',sans-serif;color:#181c1e;width:90px;">
+            <button id="ai-custom-confirm" style="width:20px;height:20px;border-radius:99px;background:#00639a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:'FILL' 1;">check</span>
+            </button>`;
+          btn.replaceWith(widget);
+          const input = widget.querySelector('#ai-custom-skill-input');
+          input.focus();
+
+          function commitSkill() {
+            const val = input.value.trim();
+            if (val) {
+              customSkills.add(val);
+              const pillEl = document.createElement('span');
+              pillEl.style.cssText = "display:inline-flex;align-items:center;gap:5px;padding:4px 8px 4px 12px;border-radius:99px;font-size:12px;font-weight:700;background:#f0fdf4;color:#15803d;border:1px solid rgba(21,128,61,0.2);font-family:'Nunito Sans',sans-serif;";
+              pillEl.innerHTML = `${val}<button data-skill="${val}" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;color:#6b7280;margin-left:1px;"><span class="material-symbols-outlined" style="font-size:13px;">close</span></button>`;
+              pillEl.querySelector('button').addEventListener('click', () => {
+                customSkills.delete(val);
+                pillEl.remove();
+                renderSuggestions(getSuggestions());
+              });
+              widget.replaceWith(pillEl);
+            } else {
+              widget.remove();
+            }
+            const newBtn = createAddBtn();
+            scrim.querySelector('#ai-pills-row').appendChild(newBtn);
+            attachAddSkillBtn();
+            renderSuggestions(getSuggestions());
+          }
+
+          function cancelInput() {
+            if (!widget.isConnected) return;
+            widget.remove();
+            const newBtn = createAddBtn();
+            scrim.querySelector('#ai-pills-row').appendChild(newBtn);
+            attachAddSkillBtn();
+          }
+
+          input.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); commitSkill(); }
+            if (e.key === 'Escape') cancelInput();
+          });
+          widget.querySelector('#ai-custom-confirm').addEventListener('click', commitSkill);
+          input.addEventListener('blur', () => setTimeout(() => { if (widget.isConnected) cancelInput(); }, 160));
+        });
+      }
+
+      attachAddSkillBtn();
+
+      // ── Generate button: disabled until role is filled ────────────────────────
+      const roleInput   = scrim.querySelector('#ai-role');
+      const generateBtn = scrim.querySelector('#ai-intake-generate');
+      function updateGenerateState() {
+        const enabled = roleInput.value.trim().length > 0;
+        generateBtn.disabled = !enabled;
+        generateBtn.style.opacity   = enabled ? '1' : '0.45';
+        generateBtn.style.cursor    = enabled ? 'pointer' : 'not-allowed';
+        generateBtn.style.pointerEvents = enabled ? '' : 'none';
+      }
+      updateGenerateState();
+      roleInput.addEventListener('input', updateGenerateState);
+
+      // ── Demo prefill (optional) ────────────────────────────────────────────────
+      if (prefill && (prefill.role || prefill.timeline || prefill.goals)) {
+        if (prefill.role)     { roleInput.value = prefill.role; updateGenerateState(); }
+        if (prefill.timeline) scrim.querySelector('#ai-timeline').value = prefill.timeline;
+        if (prefill.goals) {
+          const ta = scrim.querySelector('#ai-goals');
+          ta.value = prefill.goals;
+          detectFromText(ta.value);
+          renderSuggestions(getSuggestions());
+        }
+      }
+
+      // ── Generate ──────────────────────────────────────────────────────────────
+      scrim.querySelector('#ai-intake-generate').addEventListener('click', () => {
+        const role     = roleInput.value.trim() || 'New Role';
+        const timeline = scrim.querySelector('#ai-timeline').value.trim() || '6 months';
+        const allActive = new Set([...activePills, ...customSkills]);
+        const topics   = allActive.size ? [...allActive] : TOPICS.slice(0, 2);
+        const goals    = scrim.querySelector('#ai-goals').value.trim();
+        scrim.remove();
+        showAIProcessingModal({ role, timeline, topics, goals });
+      });
+    }
+
+    // ── AI Processing Modal ───────────────────────────────────────────────────
+    function showAIProcessingModal(formData) {
+      document.getElementById('ai-processing-scrim')?.remove();
+      const scrim = document.createElement('div');
+      scrim.id = 'ai-processing-scrim';
+      scrim.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;font-family:"Open Sans",sans-serif;';
+
+      const MESSAGES = [
+        'Analyzing your goals…',
+        'Identifying relevant content…',
+        'Structuring learning objectives…',
+        'Matching requirements…',
+        'Building activity recommendations…',
+        'Finalizing your learning path…',
+      ];
+
+      scrim.innerHTML = `
+        <div style="background:#fff;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,0.22);width:100%;max-width:420px;padding:40px 36px;text-align:center;">
+          <!-- Spinner -->
+          <div style="position:relative;width:80px;height:80px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;">
+            <div id="ai-spinner-ring" style="position:absolute;inset:0;border-radius:50%;border:4px solid #e5e7eb;border-top-color:#2563eb;animation:ai-spin 0.9s linear infinite;"></div>
+            <div style="width:44px;height:44px;background:#1e40af;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3l1.5 3 3 1.5-3 1.5L15 12l-1.5-3-3-1.5 3-1.5L15 3z"/>
+                <path d="M5 8l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/>
+              </svg>
+            </div>
+          </div>
+          <!-- Message -->
+          <div id="ai-proc-msg" style="font-size:18px;font-weight:700;color:#111827;margin-bottom:24px;min-height:28px;transition:opacity 0.4s;">Analyzing your goals…</div>
+          <!-- Progress bar -->
+          <div style="background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;margin-bottom:10px;">
+            <div id="ai-proc-bar" style="height:100%;background:#2563eb;border-radius:99px;width:8%;transition:width 0.5s ease;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;letter-spacing:0.05em;">
+            <span>GENERATING</span>
+            <span id="ai-proc-pct">8%</span>
+          </div>
+        </div>
+        <style>@keyframes ai-spin{to{transform:rotate(360deg)}}</style>`;
+
+      document.body.appendChild(scrim);
+
+      // Animate progress
+      let pct = 8;
+      let msgIdx = 0;
+      const bar = scrim.querySelector('#ai-proc-bar');
+      const pctEl = scrim.querySelector('#ai-proc-pct');
+      const msgEl = scrim.querySelector('#ai-proc-msg');
+
+      function advance() {
+        pct = Math.min(pct + Math.floor(Math.random() * 14) + 8, 96);
+        bar.style.width = pct + '%';
+        pctEl.textContent = pct + '%';
+
+        msgIdx = (msgIdx + 1) % MESSAGES.length;
+        msgEl.style.opacity = '0';
+        setTimeout(() => { msgEl.textContent = MESSAGES[msgIdx]; msgEl.style.opacity = '1'; }, 350);
+
+        if (pct < 96) {
+          setTimeout(advance, Math.floor(Math.random() * 600) + 600);
+        } else {
+          // Complete
+          setTimeout(() => {
+            bar.style.width = '100%';
+            pctEl.textContent = '100%';
+            msgEl.style.opacity = '0';
+            setTimeout(() => { msgEl.textContent = 'Learning path ready!'; msgEl.style.opacity = '1'; }, 350);
+            setTimeout(() => {
+              scrim.remove();
+              _openAIGeneratedBuilder(formData);
+            }, 900);
+          }, 500);
+        }
+      }
+      setTimeout(advance, 900);
+    }
+
+    // ── CNC Machinist full learning path dataset ──────────────────────────────
+    function buildCNCStages() {
+      const act = (name, sku, hours, desc) => ({ name, sku, type: 'Computer Based', hours, desc: desc || '' });
+      // isNew=false → "Existing Requirement" badge + dirty-edit footer on changes
+      // isAssigned=true → "Assigned Requirement" badge + warning
+      const req = (name, hours, desc, activities, isNew = true, isAssigned = false) => ({
+        _id: _newReqId(), isNew, isAssigned, criteria: 'all', order: 'sequential',
+        name, desc: desc || '', hours, activities
+      });
+      return [
+        {
+          name: 'Safety Fundamentals', hours: 1.9,
+          desc: 'Learners will establish the safety habits and awareness needed to work safely in an industrial machining environment, including identifying workplace hazards, understanding machine guarding requirements, preventing slips and falls, and performing equipment maintenance safely.',
+          requirements: [
+            req('Workplace Safety & Hazard Awareness', 1.43,
+              'Covers fundamental safety practices for industrial environments: identifying and controlling workplace hazards, understanding machine guarding requirements per OSHA standards, and preventing slips, trips, and falls through proper housekeeping and hazard reporting.',
+              [
+                act('Safety and Health - Basic', 'RVCT-336B', 0.31, 'Covers basic guidelines and best practices for safety in industrial workplaces, from identifying and avoiding common hazards to housekeeping and incident reporting.'),
+                act('Machine Guarding', 'RVCT-335B', 0.62, 'Covers the importance of having industrial machine hazards properly guarded. Aligned with OSHA General Industry standards for workers operating or working near industrial machinery.'),
+                act('Slips, Trips, and Falls', 'RVCT-918', 0.5, 'Discusses common causes of workplace slips, trips, and falls; tips for walking on slippery surfaces, stairs, and ladders; hazard identification and reporting; and first aid steps.'),
+              ], false, true  // Existing + Assigned — used in all shop-floor training
+            ),
+            req('Equipment Maintenance Safety', 0.47,
+              'Establishes safe practices for performing or supporting equipment maintenance in CNC machining environments, including hazard awareness during maintenance activities and best practices for safely maintaining and repairing industrial equipment.',
+              [
+                act('Maintenance Safety', 'RVCT-530', 0.47, 'Addresses best practices for safely maintaining and repairing complex industrial equipment, covering hazards introduced during maintenance activities.'),
+              ], false, false  // Existing — shared library req, not yet assigned here
+            ),
+          ],
+        },
+        {
+          name: 'Compliance', hours: 1.66,
+          desc: 'Learners will demonstrate compliance with energy control procedures, proper use of personal protective equipment, and applicable OSHA regulatory requirements for CNC machining operations.',
+          requirements: [
+            req('Energy Control & Personal Protection', 1.66,
+              'Covers lockout/tagout procedures for authorized employees who service or maintain CNC machines, along with proper selection and use of eye, face, and hearing protection in compliance with OSHA standards.',
+              [
+                act('Lockout Tagout for Authorized Employees', 'RVCT-532', 0.47, 'Covers OSHA lockout/tagout procedures for authorized employees performing servicing and maintenance on machines where unexpected energization could cause injury.'),
+                act('Eye and Face Protection', 'JCOM-40137', 0.52, 'Teaches how to select proper eye and face PPE, reviews OSHA regulations for eye and face protection, and explains proper maintenance of protective equipment.'),
+                act('Hearing Conservation', 'RVCT-802', 0.67, 'Describes how sound is transmitted and interpreted by the human ear, how occupational hearing loss occurs, and how a hearing conservation program prevents it.'),
+              ], false, true  // Existing + Assigned — OSHA LOTO req shared across maintenance tracks
+            ),
+          ],
+        },
+        {
+          name: 'Technical Skills', hours: 4.57,
+          desc: 'Learners will develop core CNC machining competencies including machine setup and operation, blueprint and GD&T interpretation, precision measurement, tooling and sequencing procedures, equipment reliability practices, and systematic troubleshooting techniques.',
+          requirements: [
+            req('CNC Foundations', 0.73,
+              'Introduces the core principles of CNC machining and manual machining fundamentals, including machine components, the Cartesian coordinate system, G-codes, M-codes, machining safety, and how cutting parameters affect surface finish and accuracy.',
+              [
+                act('Fundamentals of CNC', 'JCOM-40246', 0.35, 'Introduces core CNC principles including the Cartesian coordinate system, common machine types, G-codes, M-codes, work coordinate systems, and preventative maintenance practices.'),
+                act('Manual Machining Fundamentals', 'JCOM-40248', 0.38, 'Introduces machining equipment, operations, and safety procedures, including machine setup, use of micrometers and calipers, and how cutting parameters affect surface finish and accuracy.'),
+              ]
+            ),
+            req('Blueprint & Drawing Interpretation', 1.25,
+              'Develops the ability to read and interpret engineering drawings and apply GD&T concepts including form, size, orientation, position, profile, and runout tolerances used in precision machined parts.',
+              [
+                act('Blueprint Basics', 'RVCT-791', 0.25, 'Discusses the front page, legend, and other important aspects of blueprints as a critical communication tool in manufacturing organizations.'),
+                act('GD&T: Form and Size Tolerances', 'RVI-11555', 0.25, 'Covers size tolerances, form tolerances, cylindricity, and circularity using the GD&T symbolic language for standardized variation communication in product assemblies.'),
+                act('GD&T: Orientation Tolerances', 'RVI-11557', 0.25, 'Discusses the three types of orientation tolerances in GD&T: parallelism, perpendicularity, and angularity, and how they are communicated on technical drawings.'),
+                act('GD&T: Position Tolerances', 'RVI-11558', 0.25, 'Covers GD&T positional tolerances and dimensions defining feature locations on a part, including bonus tolerance, functional gauges, and hole pattern applications.'),
+                act('GD&T: Profile and Runout Tolerances', 'RVI-11559', 0.25, 'Covers profile tolerances for irregular surfaces and runout tolerances for rotating parts, including composite profile tolerances and datum references.'),
+              ], false, false  // Existing — GD&T library series, not yet assigned to this group
+            ),
+            req('Precision Measurement', 0.25,
+              'Builds proficiency with the precision measurement instruments used in CNC machining, including micrometers, telescoping gauges, dial indicators, and digital calipers, ensuring consistent quality inspection of machined components.',
+              [
+                act('Precision Measuring Tools', 'RVCT-616', 0.25, 'Covers micrometers, telescoping gauges, dial indicators, digital calipers, thermometers, tachometers, and strobe RPM monitors used in precision machining.'),
+              ]
+            ),
+            req('Tooling & Operation Sequences', 0.87,
+              'Covers tooling setup and maintenance best practices alongside the planning and execution of machining operation sequences, including reading setup sheets, following standard work instructions, and making approved efficiency adjustments.',
+              [
+                act('Tooling Setup and Maintenance', 'JCOM-40250', 0.37, 'Explains tooling setup and maintenance, including tool wear patterns, predictive maintenance, chip management, and contamination control to sustain accuracy and extend tool life.'),
+                act('Machining Operation Sequences', 'JCOM-40251', 0.5, 'Teaches operators to interpret setup sheets, follow standard work instructions, troubleshoot sequencing errors, make approved efficiency adjustments, and support continuous improvement.'),
+              ]
+            ),
+            req('Equipment Reliability & Advanced CNC', 0.77,
+              'Develops operator-driven equipment reliability practices and advanced CNC programming skills, including macros, subprograms, multi-axis kinematics, and Tool Center Point control, along with continuous improvement methodologies.',
+              [
+                act('Operator Basic Care', 'RVCT-495', 0.5, 'Covers Operator Basic Care programs that involve operators in equipment maintenance, providing a foundation for predictive maintenance and consistent product quality throughout machine lifespan.'),
+                act('CNC Advanced', 'JCOM-40247', 0.27, 'Covers sophisticated CNC programming including macros, variables, subprograms, multi-axis kinematics, Tool Center Point control, and advanced troubleshooting and continuous improvement methodologies.'),
+              ]
+            ),
+            req('Troubleshooting & Quality Improvement', 0.5,
+              'Builds systematic troubleshooting and problem-solving skills using structured five-step troubleshooting strategies and the 5 Whys technique to diagnose root causes and resolve production quality and equipment issues.',
+              [
+                act('General Troubleshooting Strategies', 'RVCT-847', 0.25, 'Provides an overview of five basic troubleshooting steps to identify, test, resolve, and verify problems logically, rather than by guessing.'),
+                act('Problem Solving Strategies', 'RVCT-424', 0.25, 'Illustrates structured problem-solving using a step-by-step plan with practical tools like the 5 Whys technique to determine hidden causes and efficiently resolve workplace issues.'),
+              ]
+            ),
+          ],
+        },
+        {
+          name: 'Soft Skills', hours: 1.6,
+          desc: 'Learners will strengthen the interpersonal and analytical skills required on the production floor, including effective workplace communication, listening and feedback techniques, and structured critical thinking and problem-solving frameworks.',
+          requirements: [
+            req('Communication & Critical Thinking', 1.6,
+              'Develops the communication and analytical skills needed in a manufacturing environment, including effective listening, feedback techniques, overcoming communication barriers, and structured problem-solving approaches to prevent and resolve recurring workplace issues.',
+              [
+                act('Clear Communication', 'ILCLC00CEN', 1.0, 'Designed to improve workplace communication skills, including listening, communication channels, feedback techniques, and methods for overcoming communication barriers.'),
+                act('Critical Thinking and Problem Solving', 'RVLS-2502', 0.6, 'Teaches strategic steps to prevent chaos and solve new or recurring problems effectively and in a timely manner through application exercises and problem-solving frameworks.'),
+              ]
+            ),
+          ],
+        },
+      ];
+    }
+
+    // ── Open builder pre-populated with AI-generated structure ────────────────
+    function _openAIGeneratedBuilder(formData) {
+      // Demo shortcut: use the full CNC Machinist dataset
+      if (formData._useCNCData) {
+        _savedAsNewInSession = [];
+        currentBuilderType = 'learning-path';
+        currentBuilderData = null;
+        const titleField = document.getElementById('lp-title');
+        const descField  = document.getElementById('lp-description');
+        const saveBtn    = document.getElementById('btn-builder-save');
+        const titleDisplay = document.getElementById('builder-title-display');
+        titleField.label = 'Learning Path Title';
+        titleField.placeholder = 'e.g. Factory Worker to Factory Manager';
+        descField.label = 'Learning Path Description';
+        saveBtn.textContent = 'Save Learning Path';
+        titleDisplay.textContent = 'Learning Path Overview';
+        titleField.value = 'CNC Machinist';
+        descField.value = 'This learning path prepares CNC Machinists with the foundational safety knowledge, regulatory compliance skills, technical machining competencies, and communication abilities required for effective and safe production in a manufacturing environment.';
+        buildAttributesSection();
+        buildStageList(buildCNCStages());
+        showScreen('builder');
+        return;
+      }
+
+      const role     = formData.role || 'New Role';
+      const topics   = formData.topics && formData.topics.length ? formData.topics : ['Safety','Compliance','Technical Skills'];
+
+      // Build a plausible stage structure based on selected topics
+      const TOPIC_REQS = {
+        'Safety':           [{ name:'Workplace Safety Fundamentals', acts:['Hazard Identification & OSHA Basics','Personal Protective Equipment (PPE)','Emergency Response Procedures'] }],
+        'Compliance':       [{ name:'Regulatory Compliance Overview', acts:['Industry Standards & Legal Requirements','Incident Reporting & Documentation','Compliance Audits & Record-Keeping'] }],
+        'Technical Skills': [{ name:'Core Technical Competencies',   acts:['Equipment Operation & Maintenance','Quality Control Procedures','Troubleshooting & Problem Solving'] }],
+        'Leadership':       [{ name:'Leadership Foundations',        acts:['Team Communication & Collaboration','Coaching & Mentoring Basics','Conflict Resolution Strategies'] }],
+        'Communication':    [{ name:'Effective Communication',       acts:['Written & Verbal Communication','Active Listening Skills','Presenting to Stakeholders'] }],
+        'Teamwork':         [{ name:'Team Dynamics',                 acts:['Building Trust & Accountability','Cross-Functional Collaboration','Working in Diverse Teams'] }],
+        'Conflict Resolution': [{ name:'Conflict Management',        acts:['Identifying Sources of Conflict','De-escalation Techniques','Negotiation & Mediation Basics'] }],
+      };
+
+      const generatedStages = topics.slice(0, 4).map((topic) => {
+        const reqDefs = TOPIC_REQS[topic] || [{ name: topic + ' Fundamentals', acts:[topic + ' Core Concepts', 'Applied ' + topic] }];
+        return {
+          name: topic,
+          hours: reqDefs[0].acts.length * 2,
+          requirements: reqDefs.map(rd => ({
+            _id: _newReqId(),
+            isNew: true,
+            isAssigned: false,
+            criteria: 'all',
+            order: 'sequential',
+            name: rd.name,
+            desc: '',
+            hours: rd.acts.length * 2,
+            activities: rd.acts.map(a => ({ name: a, type: 'Computer Based', hours: 2, desc: '' })),
+          })),
+        };
+      });
+
+      // Build with pre-populated stages
+      _savedAsNewInSession = [];
+      currentBuilderType = 'learning-path';
+      currentBuilderData = null;
+
+      const titleField = document.getElementById('lp-title');
+      const descField  = document.getElementById('lp-description');
+      const saveBtn    = document.getElementById('btn-builder-save');
+      const titleDisplay = document.getElementById('builder-title-display');
+
+      titleField.label = 'Learning Path Title';
+      titleField.placeholder = 'e.g. Factory Worker to Factory Manager';
+      descField.label = 'Learning Path Description';
+      saveBtn.textContent = 'Save Learning Path';
+      titleDisplay.textContent = 'Learning Path Overview';
+      titleField.value = role;
+      descField.value = '';
+
+      buildAttributesSection();
+      buildStageList(generatedStages);
+      showScreen('builder');
+    }
+  </script>
+
+  <!-- Picker component mount point -->
+  <div id="picker-root"></div>
+
+  <!-- Picker data configs -->
+  <script src="../components/picker/pickerData.js"></script>
+
+  <!-- Picker modal — inlined so it works under file:// (no XHR needed) -->
+  <script type="text/babel">
+// PickerModal — reusable Vector-style entity picker.
+const { useState, useMemo, useEffect, useRef } = React;
+
+function rawSvg(html) {
+  return <span className="pk-i" dangerouslySetInnerHTML={{ __html: html }} />;
+}
+const SVG_OPEN = '<svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" preserveAspectRatio="xMidYMid meet"';
+const Ic = {
+  search:       rawSvg(`${SVG_OPEN} stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>`),
+  globe:        rawSvg(`${SVG_OPEN} stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>`),
+  chevronDown:  rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>`),
+  chevronUp:    rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M6 15l6-6 6 6"/></svg>`),
+  doubleChevR:  rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M6 6l6 6-6 6M13 6l6 6-6 6"/></svg>`),
+  doubleChevL:  rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M18 6l-6 6 6 6M11 6l-6 6 6 6"/></svg>`),
+  chevR:        rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>`),
+  chevL:        rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>`),
+  pgFirst:      rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M19 18l-6-6 6-6M6 5v14"/></svg>`),
+  pgLast:       rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M5 18l6-6-6-6M18 5v14"/></svg>`),
+  check:        rawSvg(`${SVG_OPEN} stroke-width="3"><path d="M5 12l4 4 10-10"/></svg>`),
+  dash:         rawSvg(`${SVG_OPEN} stroke-width="3"><path d="M6 12h12"/></svg>`),
+  close:        rawSvg(`${SVG_OPEN} stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>`),
+  sortUp:       rawSvg(`${SVG_OPEN} stroke-width="2.4"><path d="M7 14l5-5 5 5"/></svg>`),
+  inbox:        rawSvg(`${SVG_OPEN} stroke-width="1.6"><path d="M3 13l3-7h12l3 7M3 13v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6M3 13h5l1 2h6l1-2h5"/></svg>`),
+  monitor:      rawSvg(`${SVG_OPEN} stroke-width="1.8"><rect x="2.5" y="4" width="19" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>`),
+  clock:        rawSvg(`${SVG_OPEN} stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`),
+  award:        rawSvg(`${SVG_OPEN} stroke-width="1.8"><circle cx="12" cy="9" r="6"/><path d="M8.5 14l-2 7 5.5-3 5.5 3-2-7"/></svg>`),
+  user:         rawSvg(`${SVG_OPEN} stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>`),
+  building:     rawSvg(`${SVG_OPEN} stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h2M13 8h2M9 12h2M13 12h2M9 16h2M13 16h2"/></svg>`),
+  layers:       rawSvg(`${SVG_OPEN} stroke-width="1.8"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5M3 18l9 5 9-5"/></svg>`),
+  tasklist:     rawSvg(`${SVG_OPEN} stroke-width="1.8"><path d="M4 7l2 2 3-3M4 13l2 2 3-3M4 19l2 2 3-3M12 8h8M12 14h8M12 20h8"/></svg>`),
+  doc:          rawSvg(`${SVG_OPEN} stroke-width="1.8"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>`),
+  shield:       rawSvg(`${SVG_OPEN} stroke-width="1.8"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>`),
+};
+
+function Checkbox({ checked, indeterminate, onChange, ariaLabel }) {
+  const state = indeterminate ? 'pk-indeterminate' : (checked ? 'pk-checked' : '');
+  return (
+    <span className={"pk-check " + state} role="checkbox" aria-checked={indeterminate ? 'mixed' : checked} aria-label={ariaLabel} tabIndex={0}
+      onClick={(e) => { e.stopPropagation(); onChange(!checked); }}
+      onKeyDown={(e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); onChange(!checked); } }}>
+      {indeterminate ? Ic.dash : (checked ? Ic.check : null)}
+    </span>
+  );
+}
+
+function Cell({ col, row, config, onShowDetails }) {
+  if (col.key === 'action') {
+    return <button className="pk-link" onClick={(e) => { e.stopPropagation(); onShowDetails && onShowDetails(row); }}>View Details</button>;
+  }
+  const value = config.renderCell(col, row);
+  if (value && typeof value === 'object' && value.avatar) {
+    return (
+      <span className="pk-name-wrap">
+        <span className="pk-avatar" style={{ background: value.avatar.color, width: 30, height: 30, fontSize: 11 }}>{value.avatar.initials}</span>
+        <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.25 }}>
+          <span className="pk-name-text" style={{ fontWeight: 600 }}>{value.text}</span>
+          {value.subtext && <span style={{ fontSize: 12, color: 'var(--lumo-tertiary-text-color)' }}>{value.subtext}</span>}
+        </span>
+      </span>
+    );
+  }
+  if (value && typeof value === 'object' && value.badge) {
+    const palette = {
+      success: { bg: 'var(--lumo-success-color-10pct)', fg: 'var(--lumo-success-text-color)', dot: 'var(--lumo-success-color)' },
+      neutral: { bg: 'var(--lumo-contrast-10pct)', fg: 'var(--lumo-secondary-text-color)', dot: 'var(--lumo-contrast-40pct)' },
+    }[value.badge] || {};
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', background: palette.bg, color: palette.fg, borderRadius: 4, fontSize: 12, fontWeight: 700 }}>
+        <span style={{ width: 7, height: 7, borderRadius: '50%', background: palette.dot }} />
+        {value.label}
+      </span>
+    );
+  }
+  if (col.key === 'name') {
+    return (
+      <span className="pk-name-wrap pk-name">
+        <span className="pk-name-text">{value}</span>
+        {row.isNew && <span className="pk-new">New</span>}
+      </span>
+    );
+  }
+  return <span>{value}</span>;
+}
+
+function SelectedCard({ row, config, onRemove, onShowDetails }) {
+  const meta = config.cardMeta(row);
+  const avatar = config.cardAvatar && config.cardAvatar(row);
+  return (
+    <div className="pk-side-card">
+      <button className="pk-remove" aria-label="Remove" onClick={() => onRemove(row)}>{Ic.close}</button>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        {avatar && <span className="pk-avatar" style={{ background: avatar.color, width: 40, height: 40, fontSize: 14 }}>{avatar.initials}</span>}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3 className="pk-sc-title">{row.name}</h3>
+          <div className="pk-sc-meta">
+            {meta.map((m, i) => (
+              <span key={i}>
+                {m.key && <span className="pk-sc-meta-key">{m.key}</span>}
+                {m.key && m.value ? '  ' : ''}
+                {m.value}
+              </span>
+            ))}
+          </div>
+          <button className="pk-btn-outline" onClick={() => onShowDetails && onShowDetails(row)}>View Details</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Pagination({ page, pageSize, total, onPage, onPageSize }) {
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const end = Math.min(page * pageSize, total);
+  return (
+    <div className="pk-pagination">
+      <div className="pk-pg-group">
+        <label htmlFor="pk-pg-size">Page Size:</label>
+        <select id="pk-pg-size" value={pageSize} onChange={(e) => onPageSize(parseInt(e.target.value))}>
+          {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
+        </select>
+      </div>
+      <div className="pk-pg-group">
+        <span>{start} to <span className="pk-num">{end}</span> of <span className="pk-num">{total.toLocaleString()}</span></span>
+      </div>
+      <div className="pk-pg-group">
+        <button className="pk-pg-btn" disabled={page === 1} onClick={() => onPage(1)} aria-label="First page">{Ic.pgFirst}</button>
+        <button className="pk-pg-btn" disabled={page === 1} onClick={() => onPage(page - 1)} aria-label="Previous page">{Ic.chevL}</button>
+        <span>Page <span className="pk-num">{page}</span> of <span className="pk-num">{totalPages.toLocaleString()}</span></span>
+        <button className="pk-pg-btn" disabled={page === totalPages} onClick={() => onPage(page + 1)} aria-label="Next page">{Ic.chevR}</button>
+        <button className="pk-pg-btn" disabled={page === totalPages} onClick={() => onPage(totalPages)} aria-label="Last page">{Ic.pgLast}</button>
+      </div>
+    </div>
+  );
+}
+
+function PickerModal({ config, open, initialSelected = [], onClose, onSubmit, fakeTotal }) {
+  const [search, setSearch] = useState('');
+  const [sideSearch, setSideSearch] = useState('');
+  const [sortKey] = useState('name');
+  const [sortDir, setSortDir] = useState('asc');
+  const [selectedIds, setSelectedIds] = useState(new Set(initialSelected.map(r => r.id)));
+  const [selectedMap, setSelectedMap] = useState(() => { const m = new Map(); initialSelected.forEach(r => m.set(r.id, r)); return m; });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sideCollapsed, setSideCollapsed] = useState(false);
+  const [detailRow, setDetailRow] = useState(null);
+  const [drillActivity, setDrillActivity] = useState(null);
+  const showDetails = (row) => setDetailRow(row);
+
+  useEffect(() => {
+    if (open) {
+      setSearch(''); setSideSearch(''); setPage(1);
+      const m = new Map(); initialSelected.forEach(r => m.set(r.id, r));
+      setSelectedMap(m); setSelectedIds(new Set(initialSelected.map(r => r.id)));
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === 'Escape') onClose && onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let rows = config.items;
+    if (q) rows = rows.filter(r => r.name.toLowerCase().includes(q));
+    rows = [...rows].sort((a, b) => {
+      const av = (a[sortKey] || '').toString().toLowerCase();
+      const bv = (b[sortKey] || '').toString().toLowerCase();
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return rows;
+  }, [search, sortKey, sortDir, config]);
+
+  const totalToShow = (search ? filtered.length : (fakeTotal || filtered.length));
+  const pageRows = useMemo(() => { const start = (page - 1) * pageSize; return filtered.slice(start, start + pageSize); }, [filtered, page, pageSize]);
+  const allOnPageSelected = pageRows.length > 0 && pageRows.every(r => selectedIds.has(r.id));
+  const someOnPageSelected = pageRows.some(r => selectedIds.has(r.id)) && !allOnPageSelected;
+
+  const togglePageAll = () => {
+    const next = new Set(selectedIds); const nextMap = new Map(selectedMap);
+    if (allOnPageSelected) { pageRows.forEach(r => { next.delete(r.id); nextMap.delete(r.id); }); }
+    else { pageRows.forEach(r => { next.add(r.id); nextMap.set(r.id, r); }); }
+    setSelectedIds(next); setSelectedMap(nextMap);
+  };
+
+  const toggleRow = (row) => {
+    const next = new Set(selectedIds); const nextMap = new Map(selectedMap);
+    if (next.has(row.id)) { next.delete(row.id); nextMap.delete(row.id); }
+    else { next.add(row.id); nextMap.set(row.id, row); }
+    setSelectedIds(next); setSelectedMap(nextMap);
+  };
+
+  const removeSelected = (row) => {
+    const next = new Set(selectedIds); next.delete(row.id);
+    const nextMap = new Map(selectedMap); nextMap.delete(row.id);
+    setSelectedIds(next); setSelectedMap(nextMap);
+  };
+
+  const selectedRows = useMemo(() => Array.from(selectedMap.values()), [selectedMap]);
+  const filteredSelected = useMemo(() => {
+    const q = sideSearch.trim().toLowerCase();
+    if (!q) return selectedRows;
+    return selectedRows.filter(r => r.name.toLowerCase().includes(q));
+  }, [sideSearch, selectedRows]);
+
+  if (!open) return null;
+
+  const addLabel = config.addLabel
+    ? config.addLabel(selectedRows.length)
+    : `Add ${selectedRows.length} ${selectedRows.length === 1 ? config.singular : config.plural}`;
+
+  return (
+    <div className="pk-scrim" role="dialog" aria-modal="true" aria-labelledby="pk-title" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose && onClose(); }}>
+      <div className={"pk-modal " + (sideCollapsed ? 'pk-collapsed' : '')}>
+        <div className="pk-main">
+          <div className="pk-header">
+            <h1 id="pk-title">{config.title}</h1>
+            <p className="pk-subtitle">{config.subtitle}</p>
+          </div>
+          <label htmlFor="pk-search" className="pk-search-label">Search</label>
+          <div className="pk-search">
+            <span className="pk-ic">{Ic.search}</span>
+            <input id="pk-search" value={search} placeholder={"Search " + config.plural.toLowerCase() + " by name..."} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+          </div>
+          <div className="pk-filter-row">
+            <button className="pk-filter-toggle" aria-label="Toggle filters" aria-expanded={filtersOpen} onClick={() => setFiltersOpen(v => !v)}>
+              {filtersOpen ? Ic.chevronUp : Ic.chevronDown}
+            </button>
+            <span className="pk-chip">{Ic.globe}{config.filterChip}</span>
+          </div>
+          {filtersOpen && (
+            <div className="pk-filter-extras">
+              <label>Status:</label>
+              <select defaultValue="all"><option value="all">All</option><option>Active</option><option>Archived</option></select>
+              <label>Category:</label>
+              <select defaultValue="all"><option value="all">All Categories</option><option>Safety</option><option>Compliance</option><option>Operations</option></select>
+              <label>Tag:</label>
+              <select defaultValue="all"><option value="all">All Tags</option><option>Required</option><option>Recommended</option></select>
+            </div>
+          )}
+          <div className="pk-table-wrap">
+            <table className="pk-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 40, paddingRight: 0 }}>
+                    <Checkbox checked={allOnPageSelected} indeterminate={someOnPageSelected} onChange={togglePageAll} ariaLabel="Select all on page" />
+                  </th>
+                  {config.columns.map((col) => (
+                    <th key={col.key}
+                      className={[col.divider ? 'pk-col-divider' : '', col.sortable ? 'pk-sortable' : '', col.key === sortKey ? 'pk-sorted' : '', col.key === sortKey && sortDir === 'desc' ? 'pk-sorted-desc' : ''].join(' ').trim()}
+                      onClick={() => col.sortable && setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>
+                      {col.label}{col.sortable && <span className="pk-sort-ic">{Ic.sortUp}</span>}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pageRows.length === 0 && <tr><td colSpan={config.columns.length + 1} style={{ textAlign: 'center', padding: 40, color: 'var(--lumo-tertiary-text-color)' }}>No matches.</td></tr>}
+                {pageRows.map(row => {
+                  const isSel = selectedIds.has(row.id);
+                  return (
+                    <tr key={row.id} className={isSel ? 'pk-selected' : ''} onClick={() => toggleRow(row)} style={{ cursor: 'pointer' }}>
+                      <td style={{ paddingRight: 0 }}><Checkbox checked={isSel} onChange={() => toggleRow(row)} ariaLabel={"Select " + row.name} /></td>
+                      {config.columns.map(col => (
+                        <td key={col.key} className={col.divider ? 'pk-col-divider' : ''}>
+                          <Cell col={col} row={row} config={config} onShowDetails={showDetails} />
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <Pagination page={page} pageSize={pageSize} total={totalToShow} onPage={setPage} onPageSize={(n) => { setPageSize(n); setPage(1); }} />
+        </div>
+        <aside className="pk-side" aria-hidden={sideCollapsed}>
+          <div className="pk-side-header">
+            <h2>Selected {config.plural}</h2>
+            <button className="pk-collapse-btn" aria-label="Collapse selected panel" onClick={() => setSideCollapsed(true)}>{Ic.doubleChevR}</button>
+            <span className="pk-count">{selectedRows.length}</span>
+          </div>
+          <div className="pk-search" style={{ marginBottom: 16 }}>
+            <span className="pk-ic">{Ic.search}</span>
+            <input value={sideSearch} placeholder="Search" onChange={(e) => setSideSearch(e.target.value)} style={{ height: 40 }} />
+          </div>
+          <div className="pk-side-list">
+            {selectedRows.length === 0 && (
+              <div className="pk-side-empty">{Ic.inbox}<div className="pk-empty-title">Nothing selected yet</div><div className="pk-empty-sub">Tick items in the list to add them here.</div></div>
+            )}
+            {selectedRows.length > 0 && filteredSelected.length === 0 && (
+              <div className="pk-side-empty"><div className="pk-empty-title">No matches</div><div className="pk-empty-sub">Try a different search term.</div></div>
+            )}
+            {filteredSelected.map(row => <SelectedCard key={row.id} row={row} config={config} onRemove={removeSelected} onShowDetails={showDetails} />)}
+          </div>
+        </aside>
+        {sideCollapsed && (
+          <button className="pk-reopen" style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)' }} onClick={() => setSideCollapsed(false)}>
+            {Ic.doubleChevL}<span>{selectedRows.length} Selected</span>
+          </button>
+        )}
+        <div className="pk-footer">
+          <button className="pk-btn pk-btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="pk-btn pk-btn-primary" disabled={selectedRows.length === 0} onClick={() => onSubmit && onSubmit(selectedRows)}>{addLabel}</button>
+        </div>
+      </div>
+      <DetailModal row={detailRow} config={config} onClose={() => setDetailRow(null)} onDrillToActivity={(a) => setDrillActivity(a)} />
+      <DetailModal row={drillActivity} config={window.PICKER_CONFIGS.activities} onClose={() => setDrillActivity(null)} />
+    </div>
+  );
+}
+
+function DetailModal({ row, config, onClose, onDrillToActivity }) {
+  useEffect(() => {
+    if (!row) return;
+    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose && onClose(); } };
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [row, onClose]);
+  if (!row) return null;
+  const detail = (config.detail ? config.detail(row) : null) || {};
+  const kind = detail.kind || 'single';
+  return (
+    <div className="pk-dscrim" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose && onClose(); }}>
+      <div className={"pk-detail " + (kind === 'single' ? 'pk-detail-single' : 'pk-detail-list')} role="dialog" aria-modal="true" aria-labelledby="pk-detail-title">
+        <button className="pk-detail-close" aria-label="Close" onClick={onClose}>{Ic.close}</button>
+        {kind === 'single'  && <SingleDetailBody detail={detail} row={row} config={config} />}
+        {kind === 'list'    && <ListDetailBody   detail={detail} onDrillToActivity={onDrillToActivity} />}
+        {kind === 'groups'  && <GroupsDetailBody detail={detail} onDrillToActivity={onDrillToActivity} />}
+      </div>
+    </div>
+  );
+}
+
+function SingleDetailBody({ detail, row, config }) {
+  const title = detail.title || row.name;
+  const meta  = detail.meta  || (config.cardMeta ? config.cardMeta(row).map(m => ({ icon: null, label: m.value })) : []);
+  const description = detail.description || 'No description available for this item.';
+  return (
+    <div className="pk-detail-body">
+      <h1 id="pk-detail-title" className="pk-detail-title">{title}</h1>
+      <DetailHero hero={detail.hero} title={title} />
+      {meta.length > 0 && (
+        <div className="pk-detail-meta">
+          {meta.map((m, i) => <span key={i} className="pk-detail-meta-item">{m.icon && <span className="pk-detail-meta-ic">{Ic[m.icon] || null}</span>}{m.label}</span>)}
+        </div>
+      )}
+      <h2 className="pk-detail-section">Description</h2>
+      <p className="pk-detail-desc">{description}</p>
+      {detail.sections && detail.sections.map((s, i) => (
+        <div key={i}>
+          <h2 className="pk-detail-section">{s.title}</h2>
+          {typeof s.body === 'string' ? <p className="pk-detail-desc">{s.body}</p> : s.body}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ActivityRowCard({ activity, onShowDetails }) {
+  const iconForType = activity.type === 'Skill Assessment' ? 'tasklist' : activity.type === 'Document Review' ? 'doc' : activity.type === 'Live Session' ? 'user' : activity.type === 'Drill' ? 'shield' : 'monitor';
+  return (
+    <div className="pk-arow">
+      <div className="pk-arow-body">
+        <h4 className="pk-arow-title">{activity.name}</h4>
+        <p className="pk-arow-desc">{activity.description}</p>
+        <div className="pk-arow-meta">
+          <span className="pk-arow-meta-item"><span className="pk-detail-meta-ic">{Ic[iconForType] || Ic.monitor}</span>{activity.type}</span>
+          <span className="pk-arow-meta-item"><span className="pk-detail-meta-ic">{Ic.clock}</span>{activity.duration}</span>
+        </div>
+      </div>
+      <button className="pk-btn-outline pk-arow-btn" onClick={() => onShowDetails && onShowDetails(activity)}>View Details</button>
+    </div>
+  );
+}
+
+function ListDetailBody({ detail, onDrillToActivity }) {
+  const [q, setQ] = useState('');
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    if (!needle) return detail.activities;
+    return detail.activities.filter(a => a.name.toLowerCase().includes(needle) || (a.description || '').toLowerCase().includes(needle));
+  }, [q, detail.activities]);
+  return (
+    <div className="pk-detail-body pk-detail-list-body">
+      <h1 id="pk-detail-title" className="pk-detail-title">{detail.title}</h1>
+      <label className="pk-search-label" htmlFor="pk-detail-search">Search</label>
+      <div className="pk-search" style={{ marginBottom: 8 }}>
+        <span className="pk-ic">{Ic.search}</span>
+        <input id="pk-detail-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="" />
+      </div>
+      <p className="pk-detail-sub">{detail.subtitle || `Showing ${filtered.length} total activities`}</p>
+      <div className="pk-arow-list">
+        {filtered.map((a, i) => <ActivityRowCard key={a.id + '-' + i} activity={a} onShowDetails={onDrillToActivity} />)}
+        {filtered.length === 0 && <div className="pk-side-empty"><div className="pk-empty-title">No matches</div></div>}
+      </div>
+    </div>
+  );
+}
+
+function GroupsDetailBody({ detail, onDrillToActivity }) {
+  const [q, setQ] = useState('');
+  const [openIds, setOpenIds] = useState(() => new Set(detail.groups.length ? [detail.groups[Math.min(1, detail.groups.length - 1)].id] : []));
+  const toggle = (id) => { const next = new Set(openIds); if (next.has(id)) next.delete(id); else next.add(id); setOpenIds(next); };
+  const needle = q.trim().toLowerCase();
+  const filteredGroups = useMemo(() => {
+    if (!needle) return detail.groups;
+    return detail.groups.map(g => ({ ...g, activityList: g.activityList.filter(a => a.name.toLowerCase().includes(needle) || (a.description || '').toLowerCase().includes(needle)) })).filter(g => g.activityList.length > 0 || g.name.toLowerCase().includes(needle));
+  }, [needle, detail.groups]);
+  const totalShown = filteredGroups.reduce((s, g) => s + g.activityList.length, 0);
+  return (
+    <div className="pk-detail-body pk-detail-list-body">
+      <h1 id="pk-detail-title" className="pk-detail-title">{detail.title}</h1>
+      <label className="pk-search-label" htmlFor="pk-detail-search">Search</label>
+      <div className="pk-search" style={{ marginBottom: 8 }}>
+        <span className="pk-ic">{Ic.search}</span>
+        <input id="pk-detail-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="" />
+      </div>
+      <p className="pk-detail-sub">{detail.subtitle || `Showing ${totalShown} total activities`}</p>
+      <div className="pk-accordion">
+        {filteredGroups.map(g => {
+          const isOpen = openIds.has(g.id) || !!needle;
+          return (
+            <section key={g.id} className={"pk-acc " + (isOpen ? 'pk-acc-open' : '')}>
+              <button className="pk-acc-head" onClick={() => toggle(g.id)} aria-expanded={isOpen}>
+                <h3 className="pk-acc-title">{g.name}</h3>
+                <span className="pk-acc-count">{g.activityList.length} activities</span>
+                <span className="pk-acc-chev">{isOpen ? Ic.chevronUp : Ic.chevronDown}</span>
+              </button>
+              {isOpen && <div className="pk-acc-body">{g.activityList.map((a, i) => <ActivityRowCard key={a.id + '-' + i} activity={a} onShowDetails={onDrillToActivity} />)}</div>}
+            </section>
+          );
+        })}
+        {filteredGroups.length === 0 && <div className="pk-side-empty"><div className="pk-empty-title">No matches</div></div>}
+      </div>
+    </div>
+  );
+}
+
+function DetailHero({ hero, title }) {
+  if (hero && hero.kind === 'image' && hero.src) return <div className="pk-detail-hero" style={{ backgroundImage: `url(${hero.src})` }} />;
+  if (hero && hero.kind === 'avatar') {
+    return <div className="pk-detail-hero pk-detail-hero-avatar" style={{ background: hero.color }}><span className="pk-detail-hero-initials">{hero.initials}</span></div>;
+  }
+  const palette = (hero && hero.colors) || ['#1B2B41', '#0271CE'];
+  const label   = (hero && hero.label) || title;
+  return (
+    <div className="pk-detail-hero pk-detail-hero-placeholder" style={{ background: `linear-gradient(135deg, ${palette[0]}, ${palette[1]})` }}>
+      <div className="pk-detail-hero-grid" aria-hidden="true"></div>
+      <div className="pk-detail-hero-label">{label}</div>
+    </div>
+  );
+}
+
+window.PickerModal = PickerModal;
+window._DetailModal = DetailModal;
+  </script>
+
+  <script>
+    // ── Demo functions (called directly or via postMessage from shell) ────────
+    const _CNC_GOALS = 'The CNC Machinist is responsible for safe machine operation following OSHA safety requirements and machine guarding protocols. Operators must demonstrate proficiency in CNC operation, programming, and tooling setup, as well as blueprint and technical drawing interpretation. The role requires compliance with lockout/tagout procedures, regulatory standards, and hazardous material handling requirements. Employees must communicate effectively with team members, document shift issues accurately, and apply systematic troubleshooting and problem solving to maintain production quality.';
+
+    function demoIntakeFlow() {
+      document.getElementById('ai-processing-scrim')?.remove();
+      document.getElementById('ai-intake-scrim')?.remove();
+      showScreen('manage');
+      setTimeout(() => showAIIntakeModal({ role: 'CNC Machinist', timeline: '6 months', goals: _CNC_GOALS }), 60);
+    }
+
+    function demoSkipToResult() {
+      document.getElementById('ai-processing-scrim')?.remove();
+      document.getElementById('ai-intake-scrim')?.remove();
+      showAIProcessingModal({ role: 'CNC Machinist', timeline: '6 months', topics: ['Safety','Compliance','Technical Skills','Soft Skills'], _useCNCData: true });
+    }
+
+    function demoReset() {
+      ['ai-processing-scrim','ai-intake-scrim','move-modal-scrim','unsaved-warning-scrim'].forEach(id => document.getElementById(id)?.remove());
+      showScreen('manage');
+    }
+
+    // Listen for messages from the shell demo panel
+    window.addEventListener('message', function(e) {
+      if (!e.data || !e.data.type) return;
+      if (e.data.type === 'demo:intake') demoIntakeFlow();
+      if (e.data.type === 'demo:skip')   demoSkipToResult();
+      if (e.data.type === 'demo:reset')  demoReset();
+    });
+  </script>
+</body>
+</html>
