@@ -272,7 +272,7 @@
     /* ── Requirement wrapper (hover target, holds + circles) ── */
     .req-wrapper {
       position: relative;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .req-wrapper:hover .req-card {
       box-shadow: 0 4px 20px rgba(0,0,0,0.10);
@@ -282,19 +282,19 @@
 
     /* ── + add-requirement circles ── */
     .req-add-btn {
-      position: absolute; left: -14px;
-      width: 26px; height: 26px; border-radius: 50%;
+      position: absolute; left: -12px;
+      width: 24px; height: 24px; border-radius: 50%;
       background: var(--lumo-primary-color, #0271ce);
-      color: #fff; border: none; cursor: pointer;
+      color: #fff; border: 2px solid #fff; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 13px; padding: 0;
+      font-size: 11px; padding: 0;
       opacity: 0; transition: opacity 0.15s;
       z-index: 20;
       box-shadow: 0 2px 6px rgba(2,113,206,0.35);
     }
     .req-add-btn:hover { background: var(--lumo-primary-color-50pct, #0259a4); }
-    .req-add-top    { top: -13px; }
-    .req-add-bottom { bottom: -13px; }
+    .req-add-top    { top: -12px; }
+    .req-add-bottom { bottom: -12px; }
 
     /* title + pencil inline wrapper */
     .title-with-edit {
@@ -319,37 +319,78 @@
     }
     .name-edit-btn:hover { color: var(--lumo-primary-color); background: var(--lumo-shade-5pct); }
 
-    /* ── Requirement cards (top level) ── */
+    /* ── Requirement cards (top level) — metrics copied from the
+       hi-fi mock at vectorlearning.github.io/ux-mockups ── */
     .req-card {
-      background: var(--lumo-base-color, #fff);
-      border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      background: #ffffff;
+      border: 1px solid #e5e9ef;
       border-radius: 8px; overflow: hidden;
+      box-shadow: 0 1px 4px -1px rgba(28,48,74,0.18);
+      font-size: 13px;
       transition: box-shadow 0.15s;
     }
     .req-header {
-      padding: 10px 14px 14px;
-      background: var(--lumo-base-color, #fff);
+      padding: 14px 16px 12px;
+      background: #ffffff;
       cursor: pointer;
+      display: flex; align-items: flex-start; gap: 10px;
     }
-    .req-name { cursor: text; outline: none; border-radius: 4px; padding: 1px 4px; }
-    .req-name:focus { background: var(--lumo-primary-color-10pct, #e8f0fb); }
-    .req-header-row1 {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .req-header-row2 {
-      display: flex; align-items: center; margin-bottom: 10px;
-    }
+    .req-headtext { flex: 1; min-width: 0; }
     .req-label {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 11px; font-weight: 600;
-      color: var(--lumo-secondary-text-color, #6a6f76);
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.2px;
+      color: #6b7280;
+      margin-bottom: 3px;
     }
-    .req-label i { font-size: 10px; }
-    .req-name { font-weight: 700; font-size: 18px; color: var(--lumo-body-text-color); }
-    .req-actions { display: flex; gap: 0; flex-shrink: 0; }
-    .req-actions vaadin-button { color: var(--lumo-secondary-text-color, #6a6f76); }
-    .req-actions vaadin-button:hover { color: var(--lumo-body-text-color); }
+    .req-label i { font-size: 11px; color: #0271ce; }
+    .req-title-row { display: flex; align-items: center; gap: 8px; }
+    .req-name {
+      font-size: 20px; font-weight: 600; line-height: 24px;
+      color: #1a1a2e;
+      cursor: text; outline: none; border-radius: 4px; padding: 0 2px; margin-left: -2px;
+    }
+    .req-name:focus { background: var(--lumo-primary-color-10pct, #e8f0fb); }
+    .req-title-row .name-edit-btn { color: #9ca3af; font-size: 11px; padding: 2px; }
+    .req-title-row .name-edit-btn:hover { color: #0271ce; }
+    .req-pills {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .meta-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600;
+      color: #0065ba; background: rgba(2,113,206,0.1);
+      padding: 3px 11px; border-radius: 999px;
+      white-space: nowrap;
+    }
+    .meta-pill i { font-size: 11px; }
+    .req-pills .req-badge { font-size: 12px; padding: 3px 11px; }
+    .req-actions { display: flex; gap: 2px; flex-shrink: 0; }
+    .req-icon-btn {
+      width: 28px; height: 28px; border-radius: 5px;
+      border: none; background: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #6b7280; font-size: 13px; padding: 0;
+    }
+    .req-icon-btn:hover { background: #f3f4f6; color: #374151; }
+    .req-desc-wrap { padding: 8px 16px 12px; }
+    .req-field-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #374151; margin-bottom: 5px;
+    }
+    .req-empty {
+      text-align: center; font-size: 12.5px; color: #9ca3af;
+      padding: 16px 16px 10px; line-height: 20px;
+    }
+    .add-activity-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 600; font-family: inherit;
+      color: #0271ce; background: #ffffff;
+      border: 1px solid #0271ce; border-radius: 5px;
+      padding: 5px 12px; margin: 0 16px 14px; cursor: pointer;
+    }
+    .add-activity-btn:hover { background: #f0f7ff; }
+    .add-activity-btn i { font-size: 12px; }
 
     /* Requirement badges */
     .req-badge {
@@ -419,51 +460,81 @@
       transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .req-card.req-collapsed .req-body-outer { grid-template-rows: 0fr; }
-    .req-card.req-collapsed .settings-strip { display: none; }
     .req-body { padding: 0; background: var(--lumo-base-color, #fff); overflow: hidden; min-height: 0; }
+    .req-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--lumo-primary-color, #0271ce);
+      color: #fff; font-size: 11px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
 
     /* ── Collapsible settings sections ── */
+    /* Requirement-level: inset rounded card inside the requirement body
+       (metrics copied from the hi-fi mock) */
     .settings-strip {
-      border-top: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
-      border-bottom: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
-      background: var(--lumo-shade-5pct, #f7f8fa);
+      margin: 14px 16px;
+      border: 1px solid #e6e9f0;
+      border-radius: 8px;
+      background: #f8fafc;
+      overflow: hidden;
     }
     .settings-strip__header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 16px; cursor: pointer; user-select: none;
-      font-size: 13px; font-weight: 700;
-      color: var(--lumo-body-text-color);
+      display: flex; align-items: center; gap: 9px;
+      padding: 12px 16px; cursor: pointer; user-select: none;
+      font-size: 12.5px; font-weight: 600;
+      color: #374151;
     }
     .settings-strip__header:hover { background: var(--lumo-contrast-5pct, #eff1f4); }
-    .settings-strip__header i.fa-sliders { font-size: 12px; color: var(--lumo-secondary-text-color); }
     .settings-strip__summary {
       flex: 1; font-size: 12px; font-weight: 400;
       color: var(--lumo-secondary-text-color, #6a6f76);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .settings-strip__chevron {
-      font-size: 11px; color: var(--lumo-secondary-text-color);
+      font-size: 11px; color: #9ca3af;
+      margin-left: auto;
       display: inline-block; transition: transform 0.2s;
     }
     .settings-strip.open .settings-strip__chevron { transform: rotate(90deg); }
-    .settings-strip__body { display: none; padding: 4px 16px 16px; }
-    .settings-strip.open .settings-strip__body { display: flex; gap: 40px; flex-wrap: wrap; }
-    .settings-group { min-width: 240px; }
-    .settings-group__title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .settings-strip__body { display: none; padding: 4px 16px 14px 38px; }
+    .settings-strip.open .settings-strip__body { display: block; }
+    .settings-group { margin: 0 0 6px; }
+    .settings-group + .settings-group { margin-top: 14px; }
+    .settings-group__title {
+      display: block;
+      font-size: 11.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.4px;
+      color: #374151; margin-bottom: 8px;
+    }
     .settings-group label {
-      display: flex; align-items: center; gap: 10px;
-      cursor: pointer; font-size: 14px; padding: 5px 0;
+      display: flex; align-items: flex-start; gap: 8px;
+      cursor: pointer; font-size: 12.5px; padding: 0;
+      margin-bottom: 7px;
+      color: #374151;
     }
     .settings-group input[type="radio"] {
-      width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;
+      width: 13px; height: 13px; margin-top: 2px;
+      cursor: pointer; flex-shrink: 0;
       accent-color: var(--lumo-primary-color, #0271ce);
     }
+    .settings-num-input {
+      width: 62px; padding: 4px 8px; margin-left: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 5px; font-size: 12.5px; font-family: inherit;
+      background: #ffffff; color: #374151;
+    }
+    .settings-num-input:disabled { color: #9ca3af; background: rgba(239,239,239,0.3); }
+    .settings-num-input:focus { outline: none; border-color: var(--lumo-primary-color, #0271ce); }
 
     /* Qualification-level settings card */
     .qual-settings-card { padding: 0; overflow: hidden; }
-    .qual-settings-card .settings-strip { border: none; background: var(--lumo-base-color, #fff); }
+    .qual-settings-card .settings-strip { margin: 0; border: none; border-radius: 0; background: var(--lumo-base-color, #fff); }
     .qual-settings-card .settings-strip__header { padding: 16px 20px; font-size: 14px; }
+    .qual-settings-card .settings-strip__header i.fa-sliders { font-size: 12px; color: var(--lumo-secondary-text-color); }
     .qual-settings-card .settings-strip__body { padding: 4px 20px 20px; }
+    .qual-settings-card .settings-strip.open .settings-strip__body { display: flex; gap: 40px; flex-wrap: wrap; }
+    .qual-settings-card .settings-group { min-width: 240px; margin-bottom: 0; }
 
     /* ── Activity rows — flat with top-border dividers ── */
     .activity-row {
@@ -980,6 +1051,7 @@
         _reqSnapshots.set(req._id, JSON.stringify({
           name: req.name, desc: req.desc || '',
           criteria: req.criteria || 'all', order: req.order || 'sequential',
+          criteriaCount: req.criteriaCount || 1,
           activities: req.activities,
         }));
       }
@@ -1098,11 +1170,12 @@
       const snapJSON = _reqSnapshots.get(req._id);
       if (snapJSON) {
         const snap = JSON.parse(snapJSON);
-        req.name       = snap.name;
-        req.desc       = snap.desc;
-        req.criteria   = snap.criteria;
-        req.order      = snap.order;
-        req.activities = snap.activities;
+        req.name          = snap.name;
+        req.desc          = snap.desc;
+        req.criteria      = snap.criteria;
+        req.order         = snap.order;
+        req.criteriaCount = snap.criteriaCount;
+        req.activities    = snap.activities;
       }
       req._dirty = false;
       _reqSnapshots.delete(req._id);
@@ -1333,7 +1406,7 @@
           desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.',
         });
       }
-      return { _id: _newReqId(), isNew: false, isAssigned: false, criteria: 'all', order: 'sequential', name, desc: '', activities };
+      return { _id: _newReqId(), isNew: false, isAssigned: false, criteria: 'all', order: 'any', criteriaCount: 1, name, desc: '', activities };
     }
 
     function reqHours(req) {
@@ -1350,9 +1423,11 @@
       qualReqs = reqData;
       _expandedReqs = new Set();
       _openSettings = new Set();
-      // A brand-new builder starts with its single empty requirement expanded
+      // A brand-new builder starts with its single empty requirement expanded,
+      // settings card open (matches the high fidelity mock)
       if (qualReqs.length === 1 && qualReqs[0].isNew && qualReqs[0].activities.length === 0) {
         _expandedReqs.add(qualReqs[0]._id);
+        _openSettings.add(qualReqs[0]._id);
       }
       renderReqList();
     }
@@ -1505,72 +1580,82 @@
         </div>
       `).join('');
 
-      const crit = req.criteria || 'all';
-      const ord  = req.order    || 'sequential';
-      const settingsSummary = `${crit === 'all' ? 'Complete all activities' : 'Complete a specific number'} · ${ord === 'sequential' ? 'Sequential order' : 'Any order'}`;
+      const crit  = req.criteria || 'all';
+      const ord   = req.order    || 'sequential';
+      const count = req.criteriaCount || 1;
+      const settingsSummary = `${crit === 'all' ? 'All activities' : `${count} activit${count !== 1 ? 'ies' : 'y'} required`} · ${ord === 'sequential' ? 'Sequential' : 'Any order'}`;
       const settingsHTML = `
         <div class="settings-strip${_openSettings.has(req._id) ? ' open' : ''}" id="req-settings-${reqIdx}" onclick="event.stopPropagation()">
-          <div class="settings-strip__header" onclick="toggleReqSettings(event,${reqIdx})">
-            <i class="fa-solid fa-sliders"></i>
-            <span>Requirement Settings</span>
-            <span class="settings-strip__summary">${settingsSummary}</span>
+          <div class="settings-strip__header" onclick="toggleReqSettings(event,${reqIdx})" title="${settingsSummary}">
+            <span>Settings</span>
             <i class="fa-solid fa-chevron-right settings-strip__chevron"></i>
           </div>
           <div class="settings-strip__body">
             <div class="settings-group">
-              <div class="settings-group__title">Activity Completion Criteria</div>
+              <span class="settings-group__title">Activities Required to Complete</span>
               <label><input type="radio" name="rqs-${reqIdx}-criteria" value="all" ${crit === 'all' ? 'checked' : ''}
-                onchange="reqSettingChange(${reqIdx},'criteria',this.value)"> Complete all activities</label>
+                onchange="reqSettingChange(${reqIdx},'criteria',this.value)"> <span>All activities</span></label>
               <label><input type="radio" name="rqs-${reqIdx}-criteria" value="specific" ${crit === 'specific' ? 'checked' : ''}
-                onchange="reqSettingChange(${reqIdx},'criteria',this.value)"> Complete a specific number of activities</label>
+                onchange="reqSettingChange(${reqIdx},'criteria',this.value)"> <span>A specific number:
+                <input type="number" class="settings-num-input" min="1" value="${count}" ${crit === 'specific' ? '' : 'disabled'}
+                  onclick="event.preventDefault();event.stopPropagation();"
+                  onchange="reqSettingChange(${reqIdx},'criteriaCount',Math.max(1,parseInt(this.value)||1))"></span>
+              </label>
             </div>
             <div class="settings-group">
-              <div class="settings-group__title">Activity Completion Order</div>
-              <label><input type="radio" name="rqs-${reqIdx}-order" value="sequential" ${ord === 'sequential' ? 'checked' : ''}
-                onchange="reqSettingChange(${reqIdx},'order',this.value)"> Sequential (Complete in listed order)</label>
+              <span class="settings-group__title">Activity Completion Order</span>
               <label><input type="radio" name="rqs-${reqIdx}-order" value="any" ${ord === 'any' ? 'checked' : ''}
-                onchange="reqSettingChange(${reqIdx},'order',this.value)"> Any Order</label>
+                onchange="reqSettingChange(${reqIdx},'order',this.value)"> <span>Any order. Activities can be completed in any sequence.</span></label>
+              <label><input type="radio" name="rqs-${reqIdx}-order" value="sequential" ${ord === 'sequential' ? 'checked' : ''}
+                onchange="reqSettingChange(${reqIdx},'order',this.value)"> <span>Sequential. Activities must be completed in order.</span></label>
             </div>
           </div>
         </div>`;
 
+      const hoursPill = reqHours(req) > 0
+        ? `<span class="meta-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(reqHours(req))}</span>`
+        : '';
+
+      const emptyStateHTML = req.activities.length === 0
+        ? `<div class="req-empty">No activities added yet. Add your first activity to get started.</div>`
+        : '';
+
       return `
           <div class="req-header" onclick="toggleReqCard(event,${reqIdx})">
-            <div class="req-header-row1">
-              <span class="req-label"><i class="fa-solid fa-bookmark"></i> Requirement</span>
-              <div class="req-actions">
-                <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveReq(event,${reqIdx},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveReq(event,${reqIdx},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="More" onclick="reqMoreMenu(event,${reqIdx})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="Collapse" class="req-collapse-btn"><i class="fa-solid fa-chevron-right req-chevron" style="font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(${_expandedReqs.has(req._id) ? '90deg' : '0deg'});"></i></vaadin-button>
-              </div>
-            </div>
-            <div class="req-header-row2">
-              <div class="title-with-edit">
+            <span class="req-num">${reqIdx + 1}</span>
+            <div class="req-headtext">
+              <div class="req-label"><i class="fa-solid fa-shield-halved"></i> Requirement</div>
+              <div class="req-title-row">
                 <span class="req-name" id="req-name-${reqIdx}">${req.name}</span>
-                <button class="name-edit-btn" title="Rename" onclick="reqRenameStart(event,${reqIdx})"><i class="fa-regular fa-pen-to-square"></i></button>
+                <button class="name-edit-btn" title="Rename" onclick="reqRenameStart(event,${reqIdx})"><i class="fa-solid fa-pencil"></i></button>
+              </div>
+              <div class="req-pills">
+                ${hoursPill}
+                <span class="meta-pill"><i class="fa-regular fa-rectangle-list"></i> ${req.activities.length} Activities</span>
+                ${badgesHTML}
               </div>
             </div>
-            <div class="stats-row">
-              <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(reqHours(req))}</span>
-              <span class="stat-pill"><i class="fa-solid fa-table-list"></i> ${req.activities.length} Activities</span>
-              ${badgesHTML}
+            <div class="req-actions">
+              <button class="req-icon-btn" aria-label="Move up" title="Move up" onclick="moveReq(event,${reqIdx},-1)"><i class="fa-solid fa-arrow-up"></i></button>
+              <button class="req-icon-btn" aria-label="Move down" title="Move down" onclick="moveReq(event,${reqIdx},1)"><i class="fa-solid fa-arrow-down"></i></button>
+              <button class="req-icon-btn" aria-label="More" title="More" onclick="reqMoreMenu(event,${reqIdx})"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+              <button class="req-icon-btn req-collapse-btn" aria-label="Collapse" title="Collapse"><i class="fa-solid fa-chevron-right req-chevron" style="display:inline-block;transition:transform 0.2s;transform:rotate(${_expandedReqs.has(req._id) ? '90deg' : '0deg'});"></i></button>
             </div>
           </div>
-          ${settingsHTML}
           <div class="req-body-outer">
             <div class="req-body">
-              <div style="padding:12px 16px 4px;">
+              ${settingsHTML}
+              <div class="req-desc-wrap">
+                <label class="req-field-label">Requirement Description</label>
                 <vaadin-text-area theme="outlined" id="req-desc-${reqIdx}"
-                  placeholder="Describe this requirement and what the learner will achieve"
+                  placeholder="Describe this requirement and what the learner must demonstrate."
                   style="width:100%;" rows="2"></vaadin-text-area>
               </div>
               ${activitiesHTML}
-              <div style="border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);display:flex;justify-content:center;padding:14px 16px;">
-                <vaadin-button theme="secondary" onclick="openActivityPicker(${reqIdx})">
-                  <i class="fa-solid fa-plus" slot="prefix"></i> Add Existing Activity
-                </vaadin-button>
-              </div>
+              ${emptyStateHTML}
+              <button class="add-activity-btn" onclick="openActivityPicker(${reqIdx})">
+                <i class="fa-solid fa-plus"></i> Add Existing Activity
+              </button>
             </div>
           </div>
           ${editFooterHTML}
@@ -1687,6 +1772,7 @@
       const r = REQ_SAMPLE('New Requirement', 0);
       r.isNew = true;
       qualReqs.splice(at, 0, r);
+      _openSettings.add(r._id);
       _pendingHighlight = { reqIdx: at };
       renderReqList();
     }
