@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Manage Qualifications & Learning Paths</title>
+  <title>Manage Qualifications</title>
 
   <script type="module"
     src="https://cdn.vsp-prod.com/web-components/@vector-web-components/core/v1.19.0/core.iife.js">
@@ -16,47 +16,6 @@
     href="https://cdn.vsp-prod.com/web-components/@vector-web-components/assets/v1.0.0/fonts/open-sans/v43/open-sans.css"/>
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
-  <!-- Stitch AI Modal: Tailwind + Material Symbols -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,200..1000;1,200..1000&display=swap" />
-  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-  <script id="tailwind-config">
-    tailwind.config = {
-      corePlugins: { preflight: false },
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary":                  "#00639a",
-            "primary-container":        "#1ea7fd",
-            "on-primary":               "#ffffff",
-            "secondary":                "#52606a",
-            "on-surface":               "#181c1e",
-            "on-surface-variant":       "#3f4852",
-            "surface-white":            "#FFFFFF",
-            "surface-bright":           "#f7fafd",
-            "surface-container":        "#ebeef1",
-            "surface-container-low":    "#f1f4f7",
-            "surface-container-high":   "#e5e8eb",
-            "outline-variant":          "#bec7d3",
-            "text-main":                "#2E3438",
-            "text-muted":               "#73828C",
-          },
-          spacing: {
-            "xxl": "48px", "xl": "32px", "lg": "24px",
-            "md": "16px",  "sm": "8px",  "xs": "4px",
-          },
-          fontSize: {
-            "headline-sm": ["20px", {"lineHeight":"28px","fontWeight":"600"}],
-            "body-sm":     ["14px", {"lineHeight":"20px","fontWeight":"400"}],
-            "body-md":     ["16px", {"lineHeight":"24px","fontWeight":"400"}],
-            "label-sm":    ["12px", {"lineHeight":"14px","fontWeight":"700"}],
-            "label-md":    ["14px", {"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],
-          },
-        },
-      },
-    };
-  </script>
 
   <!-- React + Babel for Picker Modal -->
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
@@ -158,7 +117,6 @@
     .mgt-table tbody td:last-child { border-right: none; }
     .mgt-col-actions { width: 64px; text-align: center; }
     .mgt-col-name    { min-width: 260px; }
-    .mgt-col-type    { width: 120px; }
     .mgt-col-comp    { width: 110px; }
     .mgt-col-order   { width: 110px; }
     .mgt-col-reqs    { width: 100px; }
@@ -213,30 +171,52 @@
     }
 
     .builder-breadcrumb {
-      font-size: 12px; color: var(--lumo-secondary-text-color);
+      font-size: 12px;
       margin-bottom: 10px;
     }
     .builder-breadcrumb a {
-      color: var(--lumo-primary-color); text-decoration: none; cursor: pointer;
+      color: rgba(255,255,255,0.85); text-decoration: none; cursor: pointer;
     }
-    .builder-breadcrumb a:hover { text-decoration: underline; }
+    .builder-breadcrumb a:hover { text-decoration: underline; color: #fff; }
     .builder-title {
       font-size: 24px; font-weight: 700;
-      color: var(--lumo-body-text-color);
-      margin-bottom: 12px;
+      color: #ffffff;
+      cursor: text; outline: none;
+      border-radius: 6px; padding: 1px 6px; margin-left: -6px;
+      min-width: 60px; display: inline-block; max-width: 100%;
     }
+    .builder-title:hover { background: rgba(255,255,255,0.08); }
+    .builder-title:focus { background: rgba(255,255,255,0.14); }
+    .builder-title:empty::before {
+      content: attr(data-placeholder);
+      color: rgba(255,255,255,0.55);
+    }
+    .hero-top .title-with-edit { margin-bottom: 12px; }
+    .hero-edit-btn { color: rgba(255,255,255,0.75); }
+    .hero-edit-btn:hover { color: #ffffff; background: rgba(255,255,255,0.12); }
+    /* Dark branded hero band — distinguishes the builder header from
+       the requirement cards below (picker hero palette) */
     .hero-top {
-      padding: 20px 24px 16px;
+      padding: 20px 24px 18px;
+      background: linear-gradient(135deg, #1B2B41 0%, #0271CE 100%);
+      border-radius: 8px 8px 0 0;
+    }
+    .hero-top .stat-pill {
+      background: rgba(255,255,255,0.16);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.22);
     }
     .hero-form {
-      border-top: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
       padding: 20px 24px 24px;
     }
     .hero-controls {
       display: flex; gap: 0; flex-shrink: 0; align-self: flex-start;
     }
     .hero-controls vaadin-button {
-      color: var(--lumo-secondary-text-color, #6a6f76);
+      color: rgba(255,255,255,0.85);
+    }
+    .hero-controls vaadin-button:hover {
+      color: #ffffff;
     }
 
     .builder-body-wrap {
@@ -289,19 +269,19 @@
     /* ── Fix vaadin-button text-decoration (tertiary theme adds underline) ── */
     vaadin-button::part(label) { text-decoration: none !important; }
 
-    /* ── Stage wrapper (hover target, holds + circles) ── */
-    .stage-wrapper {
+    /* ── Requirement wrapper (hover target, holds + circles) ── */
+    .req-wrapper {
       position: relative;
       margin-bottom: 20px;
     }
-    .stage-wrapper:hover .stage-card {
+    .req-wrapper:hover .req-card {
       box-shadow: 0 4px 20px rgba(0,0,0,0.10);
       transition: box-shadow 0.15s;
     }
-    .stage-wrapper:hover .stage-add-btn { opacity: 1; }
+    .req-wrapper:hover .req-add-btn { opacity: 1; }
 
-    /* ── + add-stage circles ── */
-    .stage-add-btn {
+    /* ── + add-requirement circles ── */
+    .req-add-btn {
       position: absolute; left: -14px;
       width: 26px; height: 26px; border-radius: 50%;
       background: var(--lumo-primary-color, #0271ce);
@@ -312,56 +292,14 @@
       z-index: 20;
       box-shadow: 0 2px 6px rgba(2,113,206,0.35);
     }
-    .stage-add-btn:hover { background: var(--lumo-primary-color-50pct, #0259a4); }
-    .stage-add-top    { top: -13px; }
-    .stage-add-bottom { bottom: -13px; }
+    .req-add-btn:hover { background: var(--lumo-primary-color-50pct, #0259a4); }
+    .req-add-top    { top: -13px; }
+    .req-add-bottom { bottom: -13px; }
 
-    /* ── Stage cards ── */
-    .stage-card {
-      background: var(--lumo-base-color, #fff);
-      border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
-      border-radius: 8px; overflow: hidden;
-      transition: box-shadow 0.15s;
-    }
-    .stage-header {
-      padding: 10px 14px 12px;
-      cursor: pointer;
-    }
-    .stage-name { cursor: text; }
-    .stage-header-row1 {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 6px;
-    }
-    .stage-header-row2 {
-      display: flex; align-items: center; gap: 6px;
-    }
-    .stage-label {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 11px; font-weight: 600;
-      color: var(--lumo-secondary-text-color, #6a6f76);
-    }
-    .stage-label i { font-size: 10px; }
-    /* title + pencil inline wrapper — used by both stage and req */
+    /* title + pencil inline wrapper */
     .title-with-edit {
       display: inline-flex; align-items: center; gap: 6px;
     }
-    .stage-name {
-      font-size: 18px; font-weight: 700;
-      color: var(--lumo-body-text-color); outline: none;
-      border-radius: 4px; padding: 1px 4px;
-    }
-    .stage-name:focus { background: var(--lumo-primary-color-10pct, #e8f0fb); }
-    .stage-actions { display: flex; gap: 0; flex-shrink: 0; }
-    .stage-actions vaadin-button { color: var(--lumo-secondary-text-color, #6a6f76); }
-    .stage-actions vaadin-button:hover { color: var(--lumo-body-text-color); }
-
-    /* Smooth collapse — outer grid container animates row height */
-    .stage-body-outer {
-      display: grid; grid-template-rows: 1fr;
-      overflow: hidden;
-      transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .stage-card.stage-collapsed .stage-body-outer { grid-template-rows: 0fr; }
 
     @keyframes _justAdded {
       0%   { transform: translateY(6px); opacity: 0.7; box-shadow: 0 0 0 0 rgba(0,99,154,0.35); }
@@ -372,9 +310,6 @@
     .just-added {
       animation: _justAdded 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    /* padding must live on an inner child — padding on the grid item itself leaks through 0fr */
-    .stage-body { padding: 0; overflow: hidden; min-height: 0; }
-    .stage-body-inner { padding: 12px 16px 16px; }
 
     /* ── Name-edit pencil button ── */
     .name-edit-btn {
@@ -384,16 +319,20 @@
     }
     .name-edit-btn:hover { color: var(--lumo-primary-color); background: var(--lumo-shade-5pct); }
 
-    /* ── Requirement cards ── */
+    /* ── Requirement cards (top level) ── */
     .req-card {
+      background: var(--lumo-base-color, #fff);
       border: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
-      border-radius: 6px; margin-bottom: 8px; overflow: hidden;
+      border-radius: 8px; overflow: hidden;
+      transition: box-shadow 0.15s;
     }
     .req-header {
       padding: 10px 14px 14px;
       background: var(--lumo-base-color, #fff);
       cursor: pointer;
     }
+    .req-name { cursor: text; outline: none; border-radius: 4px; padding: 1px 4px; }
+    .req-name:focus { background: var(--lumo-primary-color-10pct, #e8f0fb); }
     .req-header-row1 {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 6px;
@@ -480,7 +419,51 @@
       transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .req-card.req-collapsed .req-body-outer { grid-template-rows: 0fr; }
+    .req-card.req-collapsed .settings-strip { display: none; }
     .req-body { padding: 0; background: var(--lumo-base-color, #fff); overflow: hidden; min-height: 0; }
+
+    /* ── Collapsible settings sections ── */
+    .settings-strip {
+      border-top: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      border-bottom: 1px solid var(--lumo-contrast-10pct, #e3e5e8);
+      background: var(--lumo-shade-5pct, #f7f8fa);
+    }
+    .settings-strip__header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; cursor: pointer; user-select: none;
+      font-size: 13px; font-weight: 700;
+      color: var(--lumo-body-text-color);
+    }
+    .settings-strip__header:hover { background: var(--lumo-contrast-5pct, #eff1f4); }
+    .settings-strip__header i.fa-sliders { font-size: 12px; color: var(--lumo-secondary-text-color); }
+    .settings-strip__summary {
+      flex: 1; font-size: 12px; font-weight: 400;
+      color: var(--lumo-secondary-text-color, #6a6f76);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .settings-strip__chevron {
+      font-size: 11px; color: var(--lumo-secondary-text-color);
+      display: inline-block; transition: transform 0.2s;
+    }
+    .settings-strip.open .settings-strip__chevron { transform: rotate(90deg); }
+    .settings-strip__body { display: none; padding: 4px 16px 16px; }
+    .settings-strip.open .settings-strip__body { display: flex; gap: 40px; flex-wrap: wrap; }
+    .settings-group { min-width: 240px; }
+    .settings-group__title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    .settings-group label {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; font-size: 14px; padding: 5px 0;
+    }
+    .settings-group input[type="radio"] {
+      width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;
+      accent-color: var(--lumo-primary-color, #0271ce);
+    }
+
+    /* Qualification-level settings card */
+    .qual-settings-card { padding: 0; overflow: hidden; }
+    .qual-settings-card .settings-strip { border: none; background: var(--lumo-base-color, #fff); }
+    .qual-settings-card .settings-strip__header { padding: 16px 20px; font-size: 14px; }
+    .qual-settings-card .settings-strip__body { padding: 4px 20px 20px; }
 
     /* ── Activity rows — flat with top-border dividers ── */
     .activity-row {
@@ -539,10 +522,14 @@
       overflow-y: auto; flex: 1; padding: 8px 0;
     }
     .rail-item {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: flex-start; gap: 10px;
       padding: 8px 16px; cursor: pointer;
       font-size: 13px; color: var(--lumo-body-text-color);
       transition: background 0.12s; border-radius: 4px; margin: 0 4px;
+    }
+    .rail-item__label {
+      flex: 1; white-space: normal; overflow-wrap: break-word;
+      line-height: 1.4; min-width: 0; padding-top: 2px;
     }
     .rail-item:hover { background: var(--lumo-shade-5pct, #f4f5f7); }
     .rail-num {
@@ -721,11 +708,8 @@
       <button class="mgt-btn mgt-btn-outline" onclick="focusManageSearch()">
         <i class="fa-solid fa-magnifying-glass"></i> Search
       </button>
-      <button class="mgt-btn mgt-btn-blue" id="btn-new-qual" onclick="openBuilder('qualification')">
-        <i class="fa-solid fa-plus"></i> New Qualification
-      </button>
-      <button class="mgt-btn mgt-btn-blue" id="btn-new-lp" onclick="showLPChoiceModal()">
-        <i class="fa-solid fa-plus"></i> New Learning Path
+      <button class="mgt-btn mgt-btn-blue" id="btn-new-qual" onclick="openBuilder()">
+        <i class="fa-solid fa-plus"></i> New
       </button>
       <button class="mgt-btn mgt-btn-gray">
         <i class="fa-solid fa-trash"></i> Delete
@@ -754,7 +738,6 @@
             <th class="mgt-col-name">
               Name <i class="fa-solid fa-chevron-up" style="font-size:9px;color:#9ca3af;margin-left:4px;"></i>
             </th>
-            <th class="mgt-col-type">Type</th>
             <th class="mgt-col-comp">Completion</th>
             <th class="mgt-col-order">Order</th>
             <th class="mgt-col-reqs">Requirements</th>
@@ -806,56 +789,56 @@
               <a onclick="confirmLeaveBuilder(() => showScreen('manage'))">← Qualifications</a>
             </div>
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
-              <div>
-                <div class="builder-title" id="builder-title-display">Learning Path Overview</div>
+              <div style="min-width:0;flex:1;">
+                <div class="title-with-edit" style="max-width:100%;">
+                  <span class="builder-title" id="qual-title" contenteditable="true" spellcheck="false"
+                    data-placeholder="Untitled Qualification"></span>
+                  <button class="name-edit-btn hero-edit-btn" title="Rename"
+                    onclick="document.getElementById('qual-title').focus()"><i class="fa-regular fa-pen-to-square"></i></button>
+                </div>
                 <div class="stats-row" id="builder-stats-row">
                   <span class="stat-pill"><i class="fa-regular fa-clock"></i> <span id="stat-hours">0 hrs</span></span>
-                  <span class="stat-pill"><i class="fa-solid fa-layer-group"></i> <span id="stat-stages">0 Objectives</span></span>
                   <span class="stat-pill"><i class="fa-solid fa-list-check"></i> <span id="stat-reqs">0 Requirements</span></span>
                   <span class="stat-pill"><i class="fa-solid fa-play"></i> <span id="stat-acts">0 Activities</span></span>
                 </div>
               </div>
               <div class="hero-controls">
-                <vaadin-button theme="icon tertiary" aria-label="Settings" onclick="toggleLPSettings(event)"><i class="fa-solid fa-gear"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="More" onclick="lpMoreMenu(event)"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="More" onclick="qualMoreMenu(event)"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
               </div>
             </div>
           </div>
           <div class="hero-form">
-            <div class="form-row">
-              <vaadin-text-field theme="outlined" id="lp-title"
-                style="flex:2;" required></vaadin-text-field>
-              <vaadin-text-field theme="outlined" label="External ID / SKU"
-                placeholder="e.g. ABC1234567890" style="flex:1;min-width:180px;"></vaadin-text-field>
-            </div>
-            <vaadin-text-area theme="outlined" id="lp-description"
-              style="width:100%;margin-top:12px;" rows="4"></vaadin-text-area>
+            <vaadin-text-area theme="outlined" id="lp-description" label="Qualification Description"
+              style="width:100%;" rows="4"></vaadin-text-area>
           </div>
         </div>
 
-        <!-- Attributes section (Task 5) -->
+        <!-- Qualification settings (collapsible card) -->
+        <div id="qual-settings-section"></div>
+
+        <!-- Attributes section -->
         <div id="attributes-section"></div>
 
-        <!-- Stage list (Task 6) -->
-        <div id="stage-list"></div>
+        <!-- Requirement list -->
+        <div id="req-list-main"></div>
 
-        <!-- Add Stage button -->
-        <button id="btn-add-stage" style="
+        <!-- Add Requirement button -->
+        <button id="btn-add-req" style="
           width:100%; padding:14px; border:2px dashed var(--lumo-primary-color,#0271ce);
           background:transparent; border-radius:8px; cursor:pointer; font-size:14px;
           color:var(--lumo-primary-color,#0271ce); font-family:inherit;
           transition: background 0.15s;
         " onmouseover="this.style.background='var(--lumo-primary-color-10pct,#e8f0fb)'"
            onmouseout="this.style.background='transparent'">
-          + Add Objective
+          + Add Requirement
         </button>
 
       </div>
 
-      <!-- Stage structure right rail -->
+      <!-- Requirement structure right rail -->
       <div class="builder-rail" id="builder-rail">
         <div class="rail-header" onclick="toggleRail()">
-          <span class="rail-header-label">Objective Structure</span>
+          <span class="rail-header-label">Requirement Structure</span>
           <i class="fa-solid fa-chevron-right rail-chevron"></i>
         </div>
         <div class="rail-list" id="rail-list"></div>
@@ -865,7 +848,7 @@
     <!-- Footer bar -->
     <div class="builder-footer">
       <vaadin-button theme="tertiary" id="btn-builder-cancel">Cancel</vaadin-button>
-      <vaadin-button theme="primary"  id="btn-builder-save">Save Learning Path</vaadin-button>
+      <vaadin-button theme="primary"  id="btn-builder-save">Save Qualification</vaadin-button>
     </div>
 
   </div>
@@ -876,15 +859,15 @@
       <div class="confirm-check">
         <i class="fa-solid fa-check"></i>
       </div>
-      <div class="confirm-title" id="confirm-title">Learning Path Created Successfully!</div>
+      <div class="confirm-title" id="confirm-title">Qualification Created Successfully!</div>
       <div class="confirm-summary">
-        <div class="confirm-summary__name" id="confirm-lp-name">Learning Path Name</div>
+        <div class="confirm-summary__name" id="confirm-lp-name">Qualification Name</div>
         <div class="confirm-summary__desc" id="confirm-lp-desc"></div>
         <div class="stats-row" id="confirm-stats"></div>
       </div>
       <div class="confirm-actions">
-        <vaadin-button theme="secondary" id="btn-confirm-manage">Manage Learning Paths</vaadin-button>
-        <vaadin-button theme="primary"   id="btn-confirm-assign">Assign this Learning Path</vaadin-button>
+        <vaadin-button theme="secondary" id="btn-confirm-manage">Manage Qualifications</vaadin-button>
+        <vaadin-button theme="primary"   id="btn-confirm-assign">Assign this Qualification</vaadin-button>
       </div>
     </div>
   </div>
@@ -892,16 +875,16 @@
   <script>
     // ── Static data ────────────────────────────────────────────
     const QUAL_DATA = [
-      { id:1, name:'Safety Onboarding 2026',          type:'learning-path',  status:'published', stages:4, requirements:12, lastModified:'May 14, 2026' },
-      { id:2, name:'BSDF Qualification',              type:'qualification',   status:'published', stages:0, requirements:5,  lastModified:'Apr 22, 2026' },
-      { id:3, name:'Factory Worker to Factory Mgr',   type:'learning-path',  status:'draft',     stages:4, requirements:8,  lastModified:'May 19, 2026' },
-      { id:4, name:'Chemical/O and G CHEMO&G',        type:'qualification',   status:'published', stages:0, requirements:7,  lastModified:'Mar 10, 2026' },
-      { id:5, name:'Technical Skills – AEC Level 2',  type:'learning-path',  status:'draft',     stages:3, requirements:6,  lastModified:'May 18, 2026' },
-      { id:6, name:'Compliance Basics LP',            type:'learning-path',  status:'published', stages:4, requirements:10, lastModified:'May 1, 2026'  },
-      { id:7, name:'BlueOval SK Competency Assess.',  type:'qualification',   status:'published', stages:0, requirements:2,  lastModified:'Apr 5, 2026'  },
-      { id:8, name:'Soft Skills Leadership Track',    type:'learning-path',  status:'draft',     stages:4, requirements:9,  lastModified:'May 17, 2026' },
-      { id:9, name:'Career Growth and Dev HR-3',      type:'qualification',   status:'published', stages:0, requirements:4,  lastModified:'Feb 28, 2026' },
-      { id:10,name:'Construction Safety Mgr LP',      type:'learning-path',  status:'published', stages:4, requirements:14, lastModified:'May 10, 2026' },
+      { id:1, name:'Safety Onboarding 2026',          status:'published', requirements:12, lastModified:'May 14, 2026' },
+      { id:2, name:'BSDF Qualification',              status:'published', requirements:5,  lastModified:'Apr 22, 2026' },
+      { id:3, name:'Factory Worker to Factory Mgr',   status:'draft',     requirements:8,  lastModified:'May 19, 2026' },
+      { id:4, name:'Chemical/O and G CHEMO&G',        status:'published', requirements:7,  lastModified:'Mar 10, 2026' },
+      { id:5, name:'Technical Skills – AEC Level 2',  status:'draft',     requirements:6,  lastModified:'May 18, 2026' },
+      { id:6, name:'Compliance Basics',               status:'published', requirements:10, lastModified:'May 1, 2026'  },
+      { id:7, name:'BlueOval SK Competency Assess.',  status:'published', requirements:2,  lastModified:'Apr 5, 2026'  },
+      { id:8, name:'Soft Skills Leadership Track',    status:'draft',     requirements:9,  lastModified:'May 17, 2026' },
+      { id:9, name:'Career Growth and Dev HR-3',      status:'published', requirements:4,  lastModified:'Feb 28, 2026' },
+      { id:10,name:'Construction Safety Mgr',         status:'published', requirements:14, lastModified:'May 10, 2026' },
     ];
 
     // ── Screen navigation ──────────────────────────────────────
@@ -909,7 +892,6 @@
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-' + id).classList.add('active');
       window.scrollTo(0, 0);
-      window.parent.postMessage({ type: 'shell:subheader',      show:   id === 'builder' }, '*');
       window.parent.postMessage({ type: 'shell:builder-active', active: id === 'builder' }, '*');
     }
 
@@ -926,7 +908,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             </svg>
           </div>
-          <p style="font-size:21px;font-weight:700;color:#111827;margin:0 0 36px;line-height:1.3;">You have unsaved changes to this ${currentBuilderType === 'learning-path' ? 'learning path' : 'qualification'}.</p>
+          <p style="font-size:21px;font-weight:700;color:#111827;margin:0 0 36px;line-height:1.3;">You have unsaved changes to this qualification.</p>
           <div style="display:flex;gap:12px;">
             <button id="uw-cancel" style="flex:1;padding:14px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#374151;font-weight:500;">Cancel</button>
             <button id="uw-discard" style="flex:1;padding:14px;border:1.5px solid #3b82f6;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#3b82f6;font-weight:500;">Discard Changes</button>
@@ -1003,8 +985,8 @@
       }
     }
 
-    function _markReqDirty(stageIdx, reqIdx) {
-      const req = stages[stageIdx].requirements[reqIdx];
+    function _markReqDirty(reqIdx) {
+      const req = qualReqs[reqIdx];
       // Permanently record that this req was ever existing/assigned before any save-as-new
       if (!req.isNew || req.isAssigned) req._wasExisting = true;
       if (req.isNew && !req._wasExisting) return;
@@ -1013,19 +995,75 @@
       req._savedAsNew = false; // new edits supersede the saved-as-new confirmation banner
     }
 
-    function reqSaveAsNew(stageIdx, reqIdx) {
-      const req = stages[stageIdx].requirements[reqIdx];
-      req._dirty = false;
-      req.isNew = true;
-      req.isAssigned = false;
-      req._savedAsNew = true;
-      _reqSnapshots.delete(req._id);
-      _savedAsNewInSession.push(req.name);
-      renderStageList();
+    function reqSaveAsNew(reqIdx) {
+      const req = qualReqs[reqIdx];
+      // The original name is the snapshot taken before edits started, if any
+      const snapJSON = _reqSnapshots.get(req._id);
+      const origName = snapJSON ? JSON.parse(snapJSON).name : req.name;
+
+      document.getElementById('req-save-new-scrim')?.remove();
+      const scrim = document.createElement('div');
+      scrim.id = 'req-save-new-scrim';
+      scrim.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;font-family:inherit;';
+      scrim.innerHTML = `
+        <div style="background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.18);width:100%;max-width:560px;padding:40px 40px 32px;">
+          <div style="margin-bottom:20px;line-height:1;color:#3b82f6;font-size:44px;">
+            <i class="fa-solid fa-bookmark"></i>
+          </div>
+          <p style="font-size:20px;font-weight:700;color:#111827;margin:0 0 10px;">Save as a new requirement</p>
+          <p style="font-size:14px;color:#6b7280;margin:0 0 24px;line-height:1.6;">
+            The original requirement <strong>"${origName}"</strong> will remain unchanged.
+            Give the new requirement a distinct name so it is clear which version is which.
+          </p>
+          <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">New requirement name</label>
+          <input id="rsn-name" type="text" value="${origName.replace(/"/g, '&quot;')} (Copy)"
+            style="width:100%;padding:12px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:15px;font-family:inherit;color:#111827;outline:none;box-sizing:border-box;">
+          <p id="rsn-error" style="display:none;font-size:12px;color:#dc2626;margin:6px 0 0;">The new name must be different from the original requirement name.</p>
+          <div style="display:flex;gap:12px;margin-top:28px;">
+            <button id="rsn-cancel" style="flex:1;padding:14px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#374151;font-weight:500;">Cancel</button>
+            <button id="rsn-confirm" style="flex:1;padding:14px;border:none;border-radius:8px;background:#3b82f6;font-size:15px;font-family:inherit;cursor:pointer;color:#fff;font-weight:700;">Save New Requirement</button>
+          </div>
+        </div>`;
+      document.body.appendChild(scrim);
+
+      const input      = scrim.querySelector('#rsn-name');
+      const confirmBtn = scrim.querySelector('#rsn-confirm');
+      const errorEl    = scrim.querySelector('#rsn-error');
+
+      function validate() {
+        const val = input.value.trim();
+        const valid = val.length > 0 && val.toLowerCase() !== origName.trim().toLowerCase();
+        confirmBtn.disabled = !valid;
+        confirmBtn.style.opacity = valid ? '1' : '0.45';
+        confirmBtn.style.cursor  = valid ? 'pointer' : 'not-allowed';
+        errorEl.style.display = (!valid && val.length > 0) ? 'block' : 'none';
+        return valid;
+      }
+      validate();
+      input.addEventListener('input', validate);
+      input.focus();
+      input.setSelectionRange(0, input.value.length);
+
+      function commit() {
+        if (!validate()) return;
+        req.name = input.value.trim();
+        req._dirty = false;
+        req.isNew = true;
+        req.isAssigned = false;
+        req._savedAsNew = true;
+        _reqSnapshots.delete(req._id);
+        _savedAsNewInSession.push(req.name);
+        scrim.remove();
+        renderReqList();
+      }
+      confirmBtn.addEventListener('click', commit);
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') commit(); });
+      scrim.querySelector('#rsn-cancel').addEventListener('click', () => scrim.remove());
+      scrim.addEventListener('click', e => { if (e.target === scrim) scrim.remove(); });
     }
 
-    function reqUpdateExisting(stageIdx, reqIdx) {
-      const req = stages[stageIdx].requirements[reqIdx];
+    function reqUpdateExisting(reqIdx) {
+      const req = qualReqs[reqIdx];
       document.getElementById('req-update-confirm-scrim')?.remove();
       const scrim = document.createElement('div');
       scrim.id = 'req-update-confirm-scrim';
@@ -1051,12 +1089,12 @@
         req._dirty = false;
         _reqSnapshots.delete(req._id);
         scrim.remove();
-        renderStageList();
+        renderReqList();
       });
     }
 
-    function reqCancelEdits(stageIdx, reqIdx) {
-      const req = stages[stageIdx].requirements[reqIdx];
+    function reqCancelEdits(reqIdx) {
+      const req = qualReqs[reqIdx];
       const snapJSON = _reqSnapshots.get(req._id);
       if (snapJSON) {
         const snap = JSON.parse(snapJSON);
@@ -1068,14 +1106,14 @@
       }
       req._dirty = false;
       _reqSnapshots.delete(req._id);
-      renderStageList();
+      renderReqList();
     }
 
-    function reqRenameStart(e, stageIdx, reqIdx) {
+    function reqRenameStart(e, reqIdx) {
       e.stopPropagation();
-      const req = stages[stageIdx].requirements[reqIdx];
+      const req = qualReqs[reqIdx];
       if (!req.isNew || req._wasExisting) _snapshotReq(req); // snapshot before editing starts
-      const span = document.getElementById('req-name-' + stageIdx + '-' + reqIdx);
+      const span = document.getElementById('req-name-' + reqIdx);
       if (!span) return;
       span.contentEditable = 'true';
       span.style.cssText += ';outline:2px solid var(--lumo-primary-color,#3b82f6);border-radius:4px;padding:2px 6px;min-width:40px;';
@@ -1087,61 +1125,104 @@
       sel.addRange(range);
       span.addEventListener('blur', () => {
         const val = span.textContent.trim() || req.name;
-        stages[stageIdx].requirements[reqIdx].name = val;
+        qualReqs[reqIdx].name = val;
         span.contentEditable = 'false';
         span.style.outline = '';
         span.style.borderRadius = '';
         span.style.padding = '';
-        if (!req.isNew) { req._dirty = true; renderStageList(); }
+        if (!req.isNew) { req._dirty = true; renderReqList(); }
+        else renderRail();
       }, { once: true });
       span.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); span.blur(); } });
     }
 
     // ── Builder entry points ───────────────────────────────────
-    let currentBuilderType = 'learning-path';
-    let currentBuilderData = null;
-
-    function openBuilder(type, data) {
+    function openBuilder(data) {
       _savedAsNewInSession = [];
-      currentBuilderType = type;
-      currentBuilderData = data || null;
-      setupBuilder(type, data);
+      setupBuilder(data);
       showScreen('builder');
     }
 
     // ── setupBuilder ───────────────────────────────────────────
-    function setupBuilder(type, data) {
-      const titleField = document.getElementById('lp-title');
-      const descField  = document.getElementById('lp-description');
-      const saveBtn    = document.getElementById('btn-builder-save');
-      const titleDisplay = document.getElementById('builder-title-display');
+    function setupBuilder(data, reqData) {
+      const titleEl   = document.getElementById('qual-title');
+      const descField = document.getElementById('lp-description');
 
-      if (type === 'learning-path') {
-        titleField.label = 'Learning Path Title';
-        titleField.placeholder = 'e.g. Factory Worker to Factory Manager';
-        descField.label = 'Learning Path Description';
-        saveBtn.textContent = 'Save Learning Path';
-        titleDisplay.textContent = 'Learning Path Overview';
-      } else {
-        titleField.label = 'Qualification Title';
-        titleField.placeholder = 'e.g. Safety Qualification 2026';
-        descField.label = 'Qualification Description';
-        saveBtn.textContent = 'Save Qualification';
-        titleDisplay.textContent = 'New Qualification';
-      }
+      titleEl.textContent = data ? (data.name || '') : '';
+      descField.value     = data ? (data.description || '') : '';
 
-      if (data) {
-        titleField.value = data.name || '';
-        descField.value = data.description || '';
-      } else {
-        titleField.value = '';
-        descField.value = '';
-      }
-
+      qualSettings = { criteria: 'all', order: 'sequential', sku: '' };
+      buildQualSettingsCard();
       buildAttributesSection();
 
-      const initialStages = (type === 'learning-path') ? LP_DEFAULT_STAGES() : QUAL_DEFAULT_STAGES();
-      buildStageList(initialStages);
+      const initialReqs = reqData || (data ? SAMPLE_REQUIREMENTS() : NEW_DEFAULT_REQUIREMENTS());
+      buildReqList(initialReqs);
+    }
+
+    // ── Qualification settings (collapsible card) ──────────────
+    let qualSettings = { criteria: 'all', order: 'sequential', sku: '' };
+
+    function _settingsSummary(s) {
+      const crit = s.criteria === 'all' ? 'Complete all' : 'Complete a specific number';
+      const ord  = s.order === 'sequential' ? 'Sequential order' : 'Any order';
+      return `${crit} · ${ord}`;
+    }
+
+    function buildQualSettingsCard() {
+      const section = document.getElementById('qual-settings-section');
+      section.innerHTML = `
+        <div class="builder-section qual-settings-card">
+          <div class="settings-strip" id="qual-settings-strip">
+            <div class="settings-strip__header" onclick="toggleQualSettings()">
+              <i class="fa-solid fa-sliders"></i>
+              <span>Qualification Settings</span>
+              <span class="settings-strip__summary" id="qual-settings-summary"></span>
+              <i class="fa-solid fa-chevron-right settings-strip__chevron"></i>
+            </div>
+            <div class="settings-strip__body">
+              <div class="settings-group">
+                <div class="settings-group__title">Requirement Completion Criteria</div>
+                <label><input type="radio" name="qual-criteria" value="all"> Complete all requirements</label>
+                <label><input type="radio" name="qual-criteria" value="specific"> Complete a specific number of requirements</label>
+              </div>
+              <div class="settings-group">
+                <div class="settings-group__title">Requirement Completion Order</div>
+                <label><input type="radio" name="qual-order" value="sequential"> Sequential (Complete in listed order)</label>
+                <label><input type="radio" name="qual-order" value="any"> Any Order</label>
+              </div>
+              <div class="settings-group">
+                <div class="settings-group__title">External ID / SKU</div>
+                <vaadin-text-field theme="outlined" id="qual-sku"
+                  placeholder="e.g. ABC1234567890" style="width:100%;"></vaadin-text-field>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      section.querySelectorAll('[name="qual-criteria"]').forEach(r => {
+        r.checked = r.value === qualSettings.criteria;
+        r.addEventListener('change', () => { qualSettings.criteria = r.value; updateQualSettingsSummary(); });
+      });
+      section.querySelectorAll('[name="qual-order"]').forEach(r => {
+        r.checked = r.value === qualSettings.order;
+        r.addEventListener('change', () => { qualSettings.order = r.value; updateQualSettingsSummary(); });
+      });
+      const skuField = section.querySelector('#qual-sku');
+      skuField.value = qualSettings.sku || '';
+      skuField.addEventListener('input', () => { qualSettings.sku = skuField.value.trim(); updateQualSettingsSummary(); });
+      updateQualSettingsSummary();
+    }
+
+    function updateQualSettingsSummary() {
+      const el = document.getElementById('qual-settings-summary');
+      if (!el) return;
+      let text = _settingsSummary(qualSettings).replace('Complete all', 'Complete all requirements');
+      if (qualSettings.sku) text += ` · SKU: ${qualSettings.sku}`;
+      el.textContent = text;
+    }
+
+    function toggleQualSettings() {
+      document.getElementById('qual-settings-strip')?.classList.toggle('open');
     }
 
     // ── Attributes ─────────────────────────────────────────────
@@ -1222,19 +1303,21 @@
       if (countEl) countEl.textContent = count;
     }
 
-    // ── Stage data helpers ─────────────────────────────────────
-    function LP_DEFAULT_STAGES() {
-      const r = (name, acts, assigned) => Object.assign(REQ_SAMPLE(name, acts), { isAssigned: !!assigned });
-      return [
-        { name:'Safety',          hours:8,  requirements:[ r('Safety Fundamentals', 2, true), r('Hazard Identification', 2) ] },
-        { name:'Compliance',      hours:6,  requirements:[ r('Regulatory Overview', 2, true) ] },
-        { name:'Technical Skills',hours:10, requirements:[ r('Equipment Operation', 3) ] },
-        { name:'Soft Skills',     hours:4,  requirements:[] },
-      ];
+    // ── Requirement data helpers ───────────────────────────────
+    function NEW_DEFAULT_REQUIREMENTS() {
+      const r = REQ_SAMPLE('New Requirement', 0);
+      r.isNew = true;
+      return [r];
     }
 
-    function QUAL_DEFAULT_STAGES() {
-      return [ { name:'Objective 1', hours:0, requirements:[] } ];
+    function SAMPLE_REQUIREMENTS() {
+      const r = (name, acts, assigned) => Object.assign(REQ_SAMPLE(name, acts), { isAssigned: !!assigned });
+      return [
+        r('Safety Fundamentals', 2, true),
+        r('Hazard Identification', 2),
+        r('Regulatory Overview', 2, true),
+        r('Equipment Operation', 3),
+      ];
     }
 
     let _reqIdCounter = 1;
@@ -1250,93 +1333,54 @@
           desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.',
         });
       }
-      return { _id: _newReqId(), isNew: false, isAssigned: false, criteria: 'all', order: 'sequential', name, desc: '', hours: actCount * 2, activities };
+      return { _id: _newReqId(), isNew: false, isAssigned: false, criteria: 'all', order: 'sequential', name, desc: '', activities };
     }
 
-    // ── Stage list ─────────────────────────────────────────────
-    let stages = [];
-    let _expandedStages   = new Set(); // indices of currently-expanded stage cards
-    let _pendingHighlight = null;      // { stageIdx, reqIdx?, actIdx? }
-
-    function buildStageList(stageData) {
-      stages = stageData.map((s, i) => ({ ...s, id: i }));
-      renderStageList();
+    function reqHours(req) {
+      return req.activities.reduce((s, a) => s + (a.hours || 0), 0);
     }
 
-    function renderStageList() {
-      const container = document.getElementById('stage-list');
+    // ── Requirement list ───────────────────────────────────────
+    let qualReqs = [];
+    let _expandedReqs     = new Set(); // _ids of currently-expanded requirement cards
+    let _openSettings     = new Set(); // _ids of requirements with their settings strip open
+    let _pendingHighlight = null;      // { reqIdx, actIdx? }
+
+    function buildReqList(reqData) {
+      qualReqs = reqData;
+      _expandedReqs = new Set();
+      _openSettings = new Set();
+      // A brand-new builder starts with its single empty requirement expanded
+      if (qualReqs.length === 1 && qualReqs[0].isNew && qualReqs[0].activities.length === 0) {
+        _expandedReqs.add(qualReqs[0]._id);
+      }
+      renderReqList();
+    }
+
+    function renderReqList() {
+      const container = document.getElementById('req-list-main');
       container.innerHTML = '';
-      stages.forEach((stage, idx) => {
+      qualReqs.forEach((req, idx) => {
         const card = document.createElement('div');
-        card.className = 'stage-card' + (_expandedStages.has(idx) ? '' : ' stage-collapsed');
+        card.className = 'req-card' + (_expandedReqs.has(req._id) ? '' : ' req-collapsed');
         card.dataset.idx = idx;
-
-        const actTotal = stage.requirements.reduce((sum, r) => sum + r.activities.length, 0);
-
-        card.innerHTML = `
-          <div class="stage-header" onclick="toggleStageCard(event,${idx})">
-            <div class="stage-header-row1">
-              <span class="stage-label"><i class="fa-solid fa-gear"></i> Objective</span>
-              <div class="stage-actions">
-                <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveStage(${idx},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveStage(${idx},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="More" onclick="stageMenu(event,${idx})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="Collapse" class="stage-collapse-btn"><i class="fa-solid fa-chevron-right stage-chevron" style="font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(${_expandedStages.has(idx) ? '90deg' : '0deg'});"></i></vaadin-button>
-              </div>
-            </div>
-            <div class="stage-header-row2">
-              <div class="title-with-edit">
-                <span class="stage-name" contenteditable="true" data-idx="${idx}">${stage.name}</span>
-                <button class="name-edit-btn" title="Rename" onclick="this.previousElementSibling.focus()"><i class="fa-regular fa-pen-to-square"></i></button>
-              </div>
-            </div>
-            <div class="stats-row" style="margin-top:10px;">
-              <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(stage.hours)}</span>
-              <span class="stat-pill"><i class="fa-solid fa-list-check"></i> ${stage.requirements.length} Requirements</span>
-              <span class="stat-pill"><i class="fa-solid fa-play"></i> ${actTotal} Activities</span>
-            </div>
-          </div>
-          <div class="stage-body-outer">
-            <div class="stage-body">
-              <div class="stage-body-inner">
-                <vaadin-text-area theme="outlined" id="stage-desc-${idx}" placeholder="Describe the objective and what the learner will achieve"
-                  style="width:100%;margin-bottom:12px;" rows="2"></vaadin-text-area>
-                <div class="req-list" id="req-list-${idx}">
-                  ${stage.requirements.map((r, ri) => renderReqHTML(idx, ri, r)).join('')}
-                </div>
-                <div style="display:flex;justify-content:center;padding:12px 0 4px;">
-                  <vaadin-button theme="secondary" onclick="reqMenu(event,${idx})">
-                    <i class="fa-solid fa-plus" slot="prefix"></i> Add Requirement
-                    <i class="fa-solid fa-chevron-down" slot="suffix" style="font-size:10px;margin-left:2px;"></i>
-                  </vaadin-button>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-
-        // Wire up contenteditable stage name → update rail
-        const nameEl = card.querySelector('.stage-name');
-        nameEl.addEventListener('input', () => {
-          stages[idx].name = nameEl.textContent.trim();
-          renderRail();
-        });
+        card.innerHTML = renderReqHTML(idx, req);
 
         // Wrap card in hover target with + circles
         const wrapper = document.createElement('div');
-        wrapper.className = 'stage-wrapper';
+        wrapper.className = 'req-wrapper';
 
         const btnTop = document.createElement('button');
-        btnTop.className = 'stage-add-btn stage-add-top';
+        btnTop.className = 'req-add-btn req-add-top';
         btnTop.innerHTML = '<i class="fa-solid fa-plus"></i>';
-        btnTop.title = 'Add stage above';
-        btnTop.addEventListener('click', e => { e.stopPropagation(); stageAddMenu(e, idx, 'above'); });
+        btnTop.title = 'Add requirement above';
+        btnTop.addEventListener('click', e => { e.stopPropagation(); reqAddMenu(e, idx, 'above'); });
 
         const btnBottom = document.createElement('button');
-        btnBottom.className = 'stage-add-btn stage-add-bottom';
+        btnBottom.className = 'req-add-btn req-add-bottom';
         btnBottom.innerHTML = '<i class="fa-solid fa-plus"></i>';
-        btnBottom.title = 'Add stage below';
-        btnBottom.addEventListener('click', e => { e.stopPropagation(); stageAddMenu(e, idx, 'below'); });
+        btnBottom.title = 'Add requirement below';
+        btnBottom.addEventListener('click', e => { e.stopPropagation(); reqAddMenu(e, idx, 'below'); });
 
         wrapper.appendChild(btnTop);
         wrapper.appendChild(card);
@@ -1344,18 +1388,26 @@
         container.appendChild(wrapper);
       });
 
-      // Restore stage and req description values and wire input → model
-      stages.forEach((stage, si) => {
-        const stageTa = document.getElementById('stage-desc-' + si);
-        if (stageTa) {
-          if (stage.desc) stageTa.value = stage.desc;
-          stageTa.addEventListener('input', () => { stages[si].desc = stageTa.value; });
-        }
-        stage.requirements.forEach((req, ri) => {
-          const ta = document.getElementById('req-desc-' + si + '-' + ri);
-          if (!ta) return;
-          if (req.desc) ta.value = req.desc;
-          ta.addEventListener('input', () => { stages[si].requirements[ri].desc = ta.value; });
+      // Restore requirement description values and wire input → model.
+      // Description edits on existing/assigned requirements go through the
+      // same dirty-state validation flow as renames and activity changes.
+      qualReqs.forEach((req, ri) => {
+        const ta = document.getElementById('req-desc-' + ri);
+        if (!ta) return;
+        if (req.desc) ta.value = req.desc;
+        let _descAtFocus = null;
+        ta.addEventListener('focusin', () => {
+          _descAtFocus = ta.value;
+          const r = qualReqs[ri];
+          if (!r.isNew || r._wasExisting) _snapshotReq(r);
+        });
+        ta.addEventListener('input', () => { qualReqs[ri].desc = ta.value; });
+        ta.addEventListener('focusout', () => {
+          if (_descAtFocus !== null && ta.value !== _descAtFocus) {
+            _markReqDirty(ri);
+            renderReqList();
+          }
+          _descAtFocus = null;
         });
       });
 
@@ -1363,24 +1415,18 @@
       if (_pendingHighlight !== null) {
         const h = _pendingHighlight;
         _pendingHighlight = null;
-        const stageCard = document.querySelector(`.stage-card[data-idx="${h.stageIdx}"]`);
-        if (stageCard) {
-          stageCard.classList.remove('stage-collapsed');
-          _expandedStages.add(h.stageIdx);
-          const chevron = stageCard.querySelector('.stage-chevron');
+        const reqCard = document.querySelector(`.req-card[data-idx="${h.reqIdx}"]`);
+        if (reqCard) {
+          reqCard.classList.remove('req-collapsed');
+          if (qualReqs[h.reqIdx]) _expandedReqs.add(qualReqs[h.reqIdx]._id);
+          const chevron = reqCard.querySelector('.req-chevron');
           if (chevron) chevron.style.transform = 'rotate(90deg)';
           requestAnimationFrame(() => {
             setTimeout(() => {
-              let flashEl;
-              if (h.reqIdx !== undefined) {
-                const reqCards = stageCard.querySelectorAll('.req-card');
-                flashEl = reqCards[h.reqIdx];
-                if (flashEl && h.actIdx !== undefined) {
-                  const actRows = flashEl.querySelectorAll('.activity-row');
-                  flashEl = actRows[h.actIdx] || flashEl;
-                }
-              } else {
-                flashEl = stageCard;
+              let flashEl = reqCard;
+              if (h.actIdx !== undefined) {
+                const actRows = reqCard.querySelectorAll('.activity-row');
+                flashEl = actRows[h.actIdx] || reqCard;
               }
               if (flashEl) {
                 flashEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1396,10 +1442,25 @@
       updateStats();
     }
 
-    function renderReqHTML(stageIdx, reqIdx, req) {
+    function reqSettingChange(reqIdx, key, value) {
+      qualReqs[reqIdx][key] = value;
+      _markReqDirty(reqIdx);
+      renderReqList();
+    }
+
+    function toggleReqSettings(e, reqIdx) {
+      e.stopPropagation();
+      const req = qualReqs[reqIdx];
+      const strip = document.getElementById('req-settings-' + reqIdx);
+      if (!strip) return;
+      const isOpen = strip.classList.toggle('open');
+      if (isOpen) _openSettings.add(req._id); else _openSettings.delete(req._id);
+    }
+
+    function renderReqHTML(reqIdx, req) {
       const badgesHTML = [
         req.isAssigned ? `<span class="req-badge req-badge--assigned" data-tooltip="This requirement is currently assigned to at least one learner and may affect active enrollments if changed."><i class="fa-solid fa-user-check"></i>Assigned Requirement</span>` : '',
-        !req.isNew    ? `<span class="req-badge req-badge--existing" data-tooltip="This requirement was previously created and is available for assignment across learning paths."><i class="fa-solid fa-bookmark"></i>Existing Requirement</span>` : '',
+        !req.isNew    ? `<span class="req-badge req-badge--existing" data-tooltip="This requirement was previously created and is available for assignment across qualifications."><i class="fa-solid fa-bookmark"></i>Existing Requirement</span>` : '',
       ].filter(Boolean).join('');
 
       let editFooterHTML = '';
@@ -1412,12 +1473,12 @@
       } else if (req._dirty && (!req.isNew || req._wasExisting)) {
         // After save-as-new (isNew=true but _wasExisting), only offer Cancel — no "existing" to update
         const updateBtn = !req.isNew
-          ? `<vaadin-button theme="primary" onclick="reqUpdateExisting(${stageIdx},${reqIdx})">Update Existing</vaadin-button>`
+          ? `<vaadin-button theme="primary" onclick="reqUpdateExisting(${reqIdx})">Update Existing</vaadin-button>`
           : '';
         editFooterHTML = `
           <div class="req-edit-footer">
-            <vaadin-button theme="tertiary"  onclick="reqCancelEdits(${stageIdx},${reqIdx})">Cancel Edits</vaadin-button>
-            <vaadin-button theme="secondary" onclick="reqSaveAsNew(${stageIdx},${reqIdx})">Save as New</vaadin-button>
+            <vaadin-button theme="tertiary"  onclick="reqCancelEdits(${reqIdx})">Cancel Edits</vaadin-button>
+            <vaadin-button theme="secondary" onclick="reqSaveAsNew(${reqIdx})">Save as New</vaadin-button>
             ${updateBtn}
           </div>`;
       }
@@ -1433,59 +1494,86 @@
             </div>
             <div class="activity-row__desc">${a.desc}</div>
             <div style="margin-top:10px;">
-              <vaadin-button theme="secondary" onclick="openActivityDetail(${stageIdx},${reqIdx},${ai})">View Details</vaadin-button>
+              <vaadin-button theme="secondary" onclick="openActivityDetail(${reqIdx},${ai})">View Details</vaadin-button>
             </div>
           </div>
           <div class="activity-row__actions">
-            <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveActivity(event,${stageIdx},${reqIdx},${ai},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
-            <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveActivity(event,${stageIdx},${reqIdx},${ai},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
-            <vaadin-button theme="icon tertiary" aria-label="More" onclick="actMoreMenu(event,${stageIdx},${reqIdx},${ai})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+            <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveActivity(event,${reqIdx},${ai},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
+            <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveActivity(event,${reqIdx},${ai},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
+            <vaadin-button theme="icon tertiary" aria-label="More" onclick="actMoreMenu(event,${reqIdx},${ai})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
           </div>
         </div>
       `).join('');
 
+      const crit = req.criteria || 'all';
+      const ord  = req.order    || 'sequential';
+      const settingsSummary = `${crit === 'all' ? 'Complete all activities' : 'Complete a specific number'} · ${ord === 'sequential' ? 'Sequential order' : 'Any order'}`;
+      const settingsHTML = `
+        <div class="settings-strip${_openSettings.has(req._id) ? ' open' : ''}" id="req-settings-${reqIdx}" onclick="event.stopPropagation()">
+          <div class="settings-strip__header" onclick="toggleReqSettings(event,${reqIdx})">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Requirement Settings</span>
+            <span class="settings-strip__summary">${settingsSummary}</span>
+            <i class="fa-solid fa-chevron-right settings-strip__chevron"></i>
+          </div>
+          <div class="settings-strip__body">
+            <div class="settings-group">
+              <div class="settings-group__title">Activity Completion Criteria</div>
+              <label><input type="radio" name="rqs-${reqIdx}-criteria" value="all" ${crit === 'all' ? 'checked' : ''}
+                onchange="reqSettingChange(${reqIdx},'criteria',this.value)"> Complete all activities</label>
+              <label><input type="radio" name="rqs-${reqIdx}-criteria" value="specific" ${crit === 'specific' ? 'checked' : ''}
+                onchange="reqSettingChange(${reqIdx},'criteria',this.value)"> Complete a specific number of activities</label>
+            </div>
+            <div class="settings-group">
+              <div class="settings-group__title">Activity Completion Order</div>
+              <label><input type="radio" name="rqs-${reqIdx}-order" value="sequential" ${ord === 'sequential' ? 'checked' : ''}
+                onchange="reqSettingChange(${reqIdx},'order',this.value)"> Sequential (Complete in listed order)</label>
+              <label><input type="radio" name="rqs-${reqIdx}-order" value="any" ${ord === 'any' ? 'checked' : ''}
+                onchange="reqSettingChange(${reqIdx},'order',this.value)"> Any Order</label>
+            </div>
+          </div>
+        </div>`;
+
       return `
-        <div class="req-card">
-          <div class="req-header" onclick="toggleReqCard(event)">
+          <div class="req-header" onclick="toggleReqCard(event,${reqIdx})">
             <div class="req-header-row1">
-              <span class="req-label"><i class="fa-solid fa-gear"></i> Requirement</span>
+              <span class="req-label"><i class="fa-solid fa-bookmark"></i> Requirement</span>
               <div class="req-actions">
-                <vaadin-button theme="icon tertiary" aria-label="Settings" onclick="showReqSettings(event,${stageIdx},${reqIdx})"><i class="fa-solid fa-gear"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveReq(event,${stageIdx},${reqIdx},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveReq(event,${stageIdx},${reqIdx},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="More" onclick="reqMoreMenu(event,${stageIdx},${reqIdx})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
-                <vaadin-button theme="icon tertiary" aria-label="Collapse" class="req-collapse-btn"><i class="fa-solid fa-chevron-right req-chevron" style="font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(90deg);"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Move up" onclick="moveReq(event,${reqIdx},-1)"><i class="fa-solid fa-arrow-up"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Move down" onclick="moveReq(event,${reqIdx},1)"><i class="fa-solid fa-arrow-down"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="More" onclick="reqMoreMenu(event,${reqIdx})"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+                <vaadin-button theme="icon tertiary" aria-label="Collapse" class="req-collapse-btn"><i class="fa-solid fa-chevron-right req-chevron" style="font-size:11px;display:inline-block;transition:transform 0.2s;transform:rotate(${_expandedReqs.has(req._id) ? '90deg' : '0deg'});"></i></vaadin-button>
               </div>
             </div>
             <div class="req-header-row2">
               <div class="title-with-edit">
-                <span class="req-name" id="req-name-${stageIdx}-${reqIdx}">${req.name}</span>
-                <button class="name-edit-btn" title="Rename" onclick="reqRenameStart(event,${stageIdx},${reqIdx})"><i class="fa-regular fa-pen-to-square"></i></button>
+                <span class="req-name" id="req-name-${reqIdx}">${req.name}</span>
+                <button class="name-edit-btn" title="Rename" onclick="reqRenameStart(event,${reqIdx})"><i class="fa-regular fa-pen-to-square"></i></button>
               </div>
             </div>
             <div class="stats-row">
-              <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(req.hours)}</span>
+              <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${formatDuration(reqHours(req))}</span>
               <span class="stat-pill"><i class="fa-solid fa-table-list"></i> ${req.activities.length} Activities</span>
               ${badgesHTML}
             </div>
           </div>
+          ${settingsHTML}
           <div class="req-body-outer">
             <div class="req-body">
               <div style="padding:12px 16px 4px;">
-                <vaadin-text-area theme="outlined" id="req-desc-${stageIdx}-${reqIdx}"
+                <vaadin-text-area theme="outlined" id="req-desc-${reqIdx}"
                   placeholder="Describe this requirement and what the learner will achieve"
                   style="width:100%;" rows="2"></vaadin-text-area>
               </div>
               ${activitiesHTML}
               <div style="border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);display:flex;justify-content:center;padding:14px 16px;">
-                <vaadin-button theme="secondary" onclick="openActivityPicker(${stageIdx},${reqIdx})">
+                <vaadin-button theme="secondary" onclick="openActivityPicker(${reqIdx})">
                   <i class="fa-solid fa-plus" slot="prefix"></i> Add Existing Activity
                 </vaadin-button>
               </div>
             </div>
           </div>
           ${editFooterHTML}
-        </div>
       `;
     }
 
@@ -1531,28 +1619,28 @@
       return Math.ceil(hours) + ' hrs';
     }
 
-    function openActivityPicker(stageIdx, reqIdx) {
-      const req = stages[stageIdx].requirements[reqIdx];
+    function openActivityPicker(reqIdx) {
+      const req = qualReqs[reqIdx];
       if (!req.isNew || req._wasExisting) _snapshotReq(req);
       openPicker('activities', (items) => {
         items.forEach(item => {
-          stages[stageIdx].requirements[reqIdx].activities.push({
+          qualReqs[reqIdx].activities.push({
             name: item.name,
             type: item.type,
             hours: parseDuration(item.duration),
             desc: item.description || '',
           });
         });
-        _markReqDirty(stageIdx, reqIdx);
-        _pendingHighlight = { stageIdx, reqIdx, actIdx: stages[stageIdx].requirements[reqIdx].activities.length - 1 };
-        renderStageList();
+        _markReqDirty(reqIdx);
+        _pendingHighlight = { reqIdx, actIdx: qualReqs[reqIdx].activities.length - 1 };
+        renderReqList();
       });
     }
 
-    function openActivityDetail(stageIdx, reqIdx, actIdx) {
-      const act = stages[stageIdx].requirements[reqIdx].activities[actIdx];
+    function openActivityDetail(reqIdx, actIdx) {
+      const act = qualReqs[reqIdx].activities[actIdx];
       const pickerAct = {
-        id: 'builder-' + stageIdx + '-' + reqIdx + '-' + actIdx,
+        id: 'builder-' + reqIdx + '-' + actIdx,
         name: act.name,
         type: act.type,
         duration: act.hours >= 1 ? act.hours + ' hrs' : Math.round(act.hours * 60) + ' min',
@@ -1573,83 +1661,71 @@
       }));
     }
 
-    function openRequirementPicker(stageIdx) {
+    function openRequirementPicker(insertAt) {
       openPicker('requirements', (items) => {
-        items.forEach(item => {
-          stages[stageIdx].requirements.push({
-            _id: _newReqId(), isNew: true,
-            name: item.name,
-            hours: (item.activityList || []).reduce((s, a) => s + parseDuration(a.duration), 0),
-            activities: (item.activityList || []).map(a => ({
-              name: a.name,
-              type: a.type,
-              hours: parseDuration(a.duration),
-              desc: a.description || '',
-            })),
-          });
-        });
-        _pendingHighlight = { stageIdx, reqIdx: stages[stageIdx].requirements.length - 1 };
-        renderStageList();
+        const at = (insertAt === undefined || insertAt === null) ? qualReqs.length : insertAt;
+        const newReqs = items.map(item => ({
+          _id: _newReqId(), isNew: true, isAssigned: false,
+          criteria: 'all', order: 'sequential',
+          name: item.name,
+          desc: '',
+          activities: (item.activityList || []).map(a => ({
+            name: a.name,
+            type: a.type,
+            hours: parseDuration(a.duration),
+            desc: a.description || '',
+          })),
+        }));
+        qualReqs.splice(at, 0, ...newReqs);
+        _pendingHighlight = { reqIdx: at + newReqs.length - 1 };
+        renderReqList();
       });
     }
 
-    function addRequirementToStage(stageIdx) {
+    function addRequirement(insertAt) {
+      const at = (insertAt === undefined || insertAt === null) ? qualReqs.length : insertAt;
       const r = REQ_SAMPLE('New Requirement', 0);
       r.isNew = true;
-      stages[stageIdx].requirements.push(r);
-      _pendingHighlight = { stageIdx, reqIdx: stages[stageIdx].requirements.length - 1 };
-      renderStageList();
+      qualReqs.splice(at, 0, r);
+      _pendingHighlight = { reqIdx: at };
+      renderReqList();
     }
 
-    function moveStage(idx, dir) {
-      const newIdx = idx + dir;
-      if (newIdx < 0 || newIdx >= stages.length) return;
-      [stages[idx], stages[newIdx]] = [stages[newIdx], stages[idx]];
-      renderStageList();
-    }
-
-    function moveReq(e, stageIdx, reqIdx, dir) {
+    function moveReq(e, reqIdx, dir) {
       e.stopPropagation();
-      const reqs = stages[stageIdx].requirements;
       const newIdx = reqIdx + dir;
-      if (newIdx < 0 || newIdx >= reqs.length) return;
-      [reqs[reqIdx], reqs[newIdx]] = [reqs[newIdx], reqs[reqIdx]];
-      renderStageList();
+      if (newIdx < 0 || newIdx >= qualReqs.length) return;
+      [qualReqs[reqIdx], qualReqs[newIdx]] = [qualReqs[newIdx], qualReqs[reqIdx]];
+      renderReqList();
     }
 
-    function moveActivity(e, stageIdx, reqIdx, actIdx, dir) {
+    function moveActivity(e, reqIdx, actIdx, dir) {
       e.stopPropagation();
-      const acts = stages[stageIdx].requirements[reqIdx].activities;
+      const acts = qualReqs[reqIdx].activities;
       const newIdx = actIdx + dir;
       if (newIdx < 0 || newIdx >= acts.length) return;
-      _markReqDirty(stageIdx, reqIdx);
+      _markReqDirty(reqIdx);
       [acts[actIdx], acts[newIdx]] = [acts[newIdx], acts[actIdx]];
-      renderStageList();
+      renderReqList();
     }
 
-    function showMoveModal(type, srcStageIdx, srcReqIdx, srcActIdx) {
+    function showMoveModal(type, srcReqIdx, srcActIdx) {
       document.getElementById('move-modal-scrim')?.remove();
 
-      const titles = { stage:'Move Objective to', requirement:'Move Requirement to', activity:'Move Activity to' };
+      const titles = { requirement:'Move Requirement to', activity:'Move Activity to' };
 
-      // Build stage options (exclude source for stage moves)
-      const stageOpts = stages.map((s, i) =>
-        `<option value="${i}"${type === 'stage' && i === srcStageIdx ? ' disabled' : ''}>${s.name}</option>`
+      // Build requirement options (exclude source for requirement moves)
+      const reqOpts = qualReqs.map((r, i) =>
+        `<option value="${i}"${type === 'requirement' && i === srcReqIdx ? ' disabled' : ''}>${r.name}</option>`
       ).join('');
 
-      // Determine initial target stage index
-      const initStage = type === 'stage'
-        ? stages.findIndex((_, i) => i !== srcStageIdx)
-        : srcStageIdx;
+      const initReq = type === 'requirement'
+        ? qualReqs.findIndex((_, i) => i !== srcReqIdx)
+        : srcReqIdx;
 
-      // Helper: build req options for a given stage
-      function reqOptsFor(si) {
-        return stages[si].requirements.map((r, i) => `<option value="${i}">${r.name}</option>`).join('')
-          || '<option value="">No requirements</option>';
-      }
-      // Helper: build act options for a given stage + req
-      function actOptsFor(si, ri) {
-        return (stages[si]?.requirements[ri]?.activities || []).map((a, i) => `<option value="${i}">${a.name}</option>`).join('')
+      // Helper: build act options for a given requirement
+      function actOptsFor(ri) {
+        return (qualReqs[ri]?.activities || []).map((a, i) => `<option value="${i}">${a.name}</option>`).join('')
           || '<option value="">No activities</option>';
       }
 
@@ -1657,29 +1733,11 @@
 
       // Body fields differ by type
       let bodyHTML;
-      if (type === 'requirement') {
+      if (type === 'activity') {
         bodyHTML = `
           <div class="move-field">
-            <label class="move-label">Objective</label>
-            <select class="move-select" id="mv-stage">${stageOpts}</select>
-          </div>
-          <div class="move-field">
-            <label class="move-label">Position</label>
-            <select class="move-select" id="mv-pos">${posOpts}</select>
-          </div>
-          <div class="move-field">
             <label class="move-label">Requirement</label>
-            <select class="move-select" id="mv-ref" style="width:60%;">${reqOptsFor(initStage)}</select>
-          </div>`;
-      } else if (type === 'activity') {
-        bodyHTML = `
-          <div class="move-field">
-            <label class="move-label">Objective</label>
-            <select class="move-select" id="mv-stage">${stageOpts}</select>
-          </div>
-          <div class="move-field">
-            <label class="move-label">Requirement</label>
-            <select class="move-select" id="mv-req">${reqOptsFor(initStage)}</select>
+            <select class="move-select" id="mv-req">${qualReqs.map((r, i) => `<option value="${i}"${i === initReq ? ' selected' : ''}>${r.name}</option>`).join('')}</select>
           </div>
           <div class="move-field">
             <label class="move-label">Position</label>
@@ -1687,17 +1745,17 @@
           </div>
           <div class="move-field">
             <label class="move-label">Activity</label>
-            <select class="move-select" id="mv-ref" style="width:60%;">${actOptsFor(initStage, 0)}</select>
+            <select class="move-select" id="mv-ref" style="width:60%;">${actOptsFor(initReq)}</select>
           </div>`;
-      } else { // stage
+      } else { // requirement
         bodyHTML = `
           <div class="move-field">
             <label class="move-label">Position</label>
             <select class="move-select" id="mv-pos">${posOpts}</select>
           </div>
           <div class="move-field">
-            <label class="move-label">Objective</label>
-            <select class="move-select" id="mv-ref">${stageOpts}</select>
+            <label class="move-label">Requirement</label>
+            <select class="move-select" id="mv-ref">${reqOpts}</select>
           </div>`;
       }
 
@@ -1720,25 +1778,11 @@
       document.body.appendChild(scrim);
       scrim.addEventListener('click', e => { if (e.target === scrim) scrim.remove(); });
 
-      // Dynamic re-population when stage changes
-      const stageSel = document.getElementById('mv-stage');
-      if (stageSel) {
-        stageSel.addEventListener('change', () => {
-          const si = parseInt(stageSel.value);
-          if (type === 'requirement') {
-            document.getElementById('mv-ref').innerHTML = reqOptsFor(si);
-          } else if (type === 'activity') {
-            const reqSel = document.getElementById('mv-req');
-            reqSel.innerHTML = reqOptsFor(si);
-            document.getElementById('mv-ref').innerHTML = actOptsFor(si, 0);
-          }
-        });
-      }
+      // Dynamic re-population when target requirement changes (activity moves)
       if (type === 'activity') {
         document.getElementById('mv-req')?.addEventListener('change', () => {
-          const si = parseInt(document.getElementById('mv-stage').value);
           const ri = parseInt(document.getElementById('mv-req').value);
-          document.getElementById('mv-ref').innerHTML = actOptsFor(si, ri);
+          document.getElementById('mv-ref').innerHTML = actOptsFor(ri);
         });
       }
 
@@ -1747,27 +1791,21 @@
         const pos     = document.getElementById('mv-pos')?.value || 'before';
         const refIdx  = parseInt(document.getElementById('mv-ref')?.value ?? 0);
 
-        if (type === 'requirement') {
-          const tgtStage = parseInt(document.getElementById('mv-stage').value);
-          const [req] = stages[srcStageIdx].requirements.splice(srcReqIdx, 1);
+        if (type === 'activity') {
+          const tgtReq = parseInt(document.getElementById('mv-req').value);
+          const [act] = qualReqs[srcReqIdx].activities.splice(srcActIdx, 1);
           const insertAt = pos === 'before' ? refIdx : refIdx + 1;
-          stages[tgtStage].requirements.splice(insertAt, 0, req);
-        } else if (type === 'activity') {
-          const tgtStage = parseInt(document.getElementById('mv-stage').value);
-          const tgtReq   = parseInt(document.getElementById('mv-req').value);
-          const [act] = stages[srcStageIdx].requirements[srcReqIdx].activities.splice(srcActIdx, 1);
-          const insertAt = pos === 'before' ? refIdx : refIdx + 1;
-          stages[tgtStage].requirements[tgtReq].activities.splice(insertAt, 0, act);
-        } else { // stage
-          const refStage = parseInt(document.getElementById('mv-ref').value);
-          const [stage] = stages.splice(srcStageIdx, 1);
-          const adjustedRef = refStage > srcStageIdx ? refStage - 1 : refStage;
+          qualReqs[tgtReq].activities.splice(insertAt, 0, act);
+        } else { // requirement
+          const refReq = parseInt(document.getElementById('mv-ref').value);
+          const [req] = qualReqs.splice(srcReqIdx, 1);
+          const adjustedRef = refReq > srcReqIdx ? refReq - 1 : refReq;
           const insertAt    = pos === 'before' ? adjustedRef : adjustedRef + 1;
-          stages.splice(insertAt, 0, stage);
+          qualReqs.splice(insertAt, 0, req);
         }
 
         scrim.remove();
-        renderStageList();
+        renderReqList();
       });
     }
 
@@ -1802,49 +1840,42 @@
       setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
     }
 
-    function stageMenu(e, idx) {
-      _ctxMenu(e, 'stage-ctx-menu', [
-        { label: 'Move Objective', fn: () => showMoveModal('stage', idx) },
-        { label: 'Remove',     fn: () => { if (stages.length > 1) { stages.splice(idx, 1); renderStageList(); } }, danger: true },
-      ]);
-    }
-
-    function reqMoreMenu(e, stageIdx, reqIdx) {
+    function reqMoreMenu(e, reqIdx) {
       _ctxMenu(e, 'req-ctx-menu', [
-        { label: 'Move Requirement', fn: () => showMoveModal('requirement', stageIdx, reqIdx) },
-        { label: 'Remove',           fn: () => { stages[stageIdx].requirements.splice(reqIdx, 1); renderStageList(); }, danger: true },
+        { label: 'Move Requirement', fn: () => showMoveModal('requirement', reqIdx) },
+        { label: 'Remove',           fn: () => { qualReqs.splice(reqIdx, 1); renderReqList(); }, danger: true },
       ]);
     }
 
-    function actMoreMenu(e, stageIdx, reqIdx, actIdx) {
+    function actMoreMenu(e, reqIdx, actIdx) {
       _ctxMenu(e, 'act-ctx-menu', [
-        { label: 'Move Activity', fn: () => showMoveModal('activity', stageIdx, reqIdx, actIdx) },
+        { label: 'Move Activity', fn: () => showMoveModal('activity', reqIdx, actIdx) },
         { label: 'Remove', fn: () => {
-          _markReqDirty(stageIdx, reqIdx);
-          stages[stageIdx].requirements[reqIdx].activities.splice(actIdx, 1);
-          renderStageList();
+          _markReqDirty(reqIdx);
+          qualReqs[reqIdx].activities.splice(actIdx, 1);
+          renderReqList();
         }, danger: true },
       ]);
     }
 
-    function stageAddMenu(e, idx, position) {
+    function reqAddMenu(e, idx, position) {
       e.stopPropagation();
-      const existing = document.getElementById('stage-add-menu');
+      const existing = document.getElementById('req-add-menu');
       if (existing) existing.remove();
       const rect = e.currentTarget.getBoundingClientRect();
       const menu = document.createElement('div');
-      menu.id = 'stage-add-menu';
+      menu.id = 'req-add-menu';
       menu.style.cssText = `
         position:fixed; top:${rect.top}px; left:${rect.right + 6}px;
         background:#fff; border:1px solid var(--lumo-contrast-10pct);
         border-radius:6px; box-shadow:0 4px 16px rgba(0,0,0,0.12);
-        z-index:1000; min-width:210px; overflow:hidden; font-size:13px;
+        z-index:1000; min-width:240px; overflow:hidden; font-size:13px;
       `;
       const dir = position === 'above' ? 'Above' : 'Below';
       const insertAt = position === 'above' ? idx : idx + 1;
       const items = [
-        { label: `Add New Stage ${dir}`,      fn: () => insertNewStage(insertAt) },
-        { label: `Add Existing Stage ${dir}`, fn: () => insertNewStage(insertAt) },
+        { label: `Create New Requirement ${dir}`,   fn: () => addRequirement(insertAt) },
+        { label: `Add Existing Requirement ${dir}`, fn: () => openRequirementPicker(insertAt) },
       ];
       items.forEach(({ label, fn }) => {
         const item = document.createElement('div');
@@ -1862,19 +1893,14 @@
       scroller.addEventListener('scroll', closeOnScroll, { once: true });
     }
 
-    function insertNewStage(atIdx) {
-      stages.splice(atIdx, 0, { name: 'New Stage', hours: 0, requirements: [] });
-      renderStageList();
-    }
-
-    function lpMoreMenu(e) {
+    function qualMoreMenu(e) {
       e.stopPropagation();
-      const existing = document.getElementById('lp-more-menu');
+      const existing = document.getElementById('qual-more-menu');
       if (existing) { existing.remove(); return; }
       const btn = e.target.closest('vaadin-button') || e.target;
       const rect = btn.getBoundingClientRect();
       const menu = document.createElement('div');
-      menu.id = 'lp-more-menu';
+      menu.id = 'qual-more-menu';
       menu.style.cssText = `
         position:fixed; top:${rect.bottom + 4}px; right:${window.innerWidth - rect.right}px;
         background:#fff; border:1px solid var(--lumo-contrast-10pct,#e3e5e8);
@@ -1883,7 +1909,7 @@
       `;
       [
         { label: 'View Audit History', fn: () => showAuditHistory() },
-        { label: 'Delete Learning Path', fn: () => {}, danger: true },
+        { label: 'Delete Qualification', fn: () => {}, danger: true },
       ].forEach(({ label, fn, danger }) => {
         const item = document.createElement('div');
         item.textContent = label;
@@ -1899,10 +1925,10 @@
 
     function showAuditHistory() {
       const rows = [
-        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Created',  date: '11/17/2025', scope: 'CreateLearningPath' },
-        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '12/3/2025',  scope: 'UpdateLearningPath' },
-        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '1/14/2026',  scope: 'UpdateLearningPath' },
-        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '2/1/2026',   scope: 'UpdateLearningPath' },
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Created',  date: '11/17/2025', scope: 'CreateQualification' },
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '12/3/2025',  scope: 'UpdateQualification' },
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '1/14/2026',  scope: 'UpdateQualification' },
+        { user: 'Andy Xia', email: 'andy.xia@vectorsolutions.com', action: 'Updated',  date: '2/1/2026',   scope: 'UpdateQualification' },
       ];
 
       const scrim = document.createElement('div');
@@ -1913,8 +1939,8 @@
             <i class="fa-solid fa-xmark"></i>
           </button>
           <div class="audit-modal__head">
-            <h2>Learning Path Audit History</h2>
-            <p>This is a record of what changes have been made to this Learning Path</p>
+            <h2>Qualification Audit History</h2>
+            <p>This is a record of what changes have been made to this Qualification</p>
           </div>
           <div class="audit-modal__body">
             <table class="audit-table">
@@ -1950,185 +1976,26 @@
       document.body.appendChild(scrim);
     }
 
-    function toggleLPSettings(e) {
-      e.stopPropagation();
-      const existing = document.getElementById('lp-settings-panel');
-      if (existing) { existing.remove(); return; }
-
-      const btn = e.currentTarget;
-      const rect = btn.getBoundingClientRect();
-
-      const panel = document.createElement('div');
-      panel.id = 'lp-settings-panel';
-      panel.style.cssText = `
-        position:fixed; top:${rect.bottom + 8}px; right:${window.innerWidth - rect.right}px;
-        width:360px; background:#fff; border-radius:12px;
-        box-shadow:0 8px 32px rgba(0,0,0,0.18); z-index:1000;
-        padding:24px 24px 28px; font-family:'Open Sans',sans-serif; font-size:14px;
-      `;
-
-      panel.innerHTML = `
-        <div style="font-size:20px;font-weight:700;color:var(--lumo-body-text-color,#1a1a1a);margin-bottom:6px;">Objective Completion Settings</div>
-        <div style="font-size:13px;color:var(--lumo-secondary-text-color,#6a6f76);line-height:1.5;margin-bottom:20px;">Configure how learners complete Objectives in this Learning path</div>
-        <hr style="border:none;border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);margin-bottom:20px;">
-
-        <div style="font-weight:700;margin-bottom:10px;">Objective Completion Criteria</div>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;border-bottom:1px solid var(--lumo-contrast-10pct,#e3e5e8);">
-          <input type="radio" name="lp-criteria" value="all" checked
-            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
-          <span>Complete all stages</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;">
-          <input type="radio" name="lp-criteria" value="specific"
-            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
-          <span>Complete a specific number of stages</span>
-        </label>
-
-        <hr style="border:none;border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);margin:16px 0 20px;">
-
-        <div style="font-weight:700;margin-bottom:10px;">Objective Completion Order</div>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;border-bottom:1px solid var(--lumo-contrast-10pct,#e3e5e8);">
-          <input type="radio" name="lp-order" value="sequential" checked
-            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
-          <span>Sequential (Complete in listed order)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:12px;cursor:pointer;padding:10px 0;">
-          <input type="radio" name="lp-order" value="any"
-            style="accent-color:var(--lumo-primary-color,#0271ce);width:20px;height:20px;cursor:pointer;flex-shrink:0;">
-          <span>Any Order</span>
-        </label>
-      `;
-
-      document.body.appendChild(panel);
-
-      // Close on outside click or scroll
-      setTimeout(() => document.addEventListener('click', () => panel.remove(), { once: true }), 10);
-      const scroller = document.querySelector('.builder-main');
-      if (scroller) {
-        const closeOnScroll = () => { panel.remove(); scroller.removeEventListener('scroll', closeOnScroll); };
-        scroller.addEventListener('scroll', closeOnScroll, { once: true });
-      }
-    }
-
     function toggleRail() {
       document.getElementById('builder-rail').classList.toggle('rail-collapsed');
     }
 
-    function toggleStageCard(e, idx) {
-      const btn = e.target.closest('vaadin-button, button');
-      if (btn && !btn.classList.contains('stage-collapse-btn')) return;
-      if (e.target.closest('[contenteditable]')) return;
-      const card = e.currentTarget.closest('.stage-card');
-      const chevron = card.querySelector('.stage-chevron');
-      const isCollapsed = card.classList.toggle('stage-collapsed');
-      if (chevron) chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)';
-      if (isCollapsed) { _expandedStages.delete(idx); } else { _expandedStages.add(idx); }
-    }
-
-    function toggleReqCard(e) {
+    function toggleReqCard(e, idx) {
       const btn = e.target.closest('vaadin-button, button');
       if (btn && !btn.classList.contains('req-collapse-btn')) return;
+      if (e.target.closest('[contenteditable="true"]')) return;
       const card = e.currentTarget.closest('.req-card');
       const chevron = card.querySelector('.req-chevron');
       const isCollapsed = card.classList.toggle('req-collapsed');
       if (chevron) chevron.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)';
+      const req = qualReqs[idx];
+      if (req) {
+        if (isCollapsed) _expandedReqs.delete(req._id);
+        else _expandedReqs.add(req._id);
+      }
     }
 
-    function showReqSettings(e, stageIdx, reqIdx) {
-      e.stopPropagation();
-      const existing = document.getElementById('req-settings-panel');
-      if (existing) { existing.remove(); return; }
-
-      const req  = stages[stageIdx].requirements[reqIdx];
-      const btn  = e.currentTarget || e.target.closest('vaadin-button') || e.target;
-      const rect = btn.getBoundingClientRect();
-
-      // Snapshot before any change so Cancel can revert
-      if (!req.isNew) _snapshotReq(req);
-
-      const PANEL_H = 300;
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const topPos = spaceBelow >= PANEL_H + 8
-        ? rect.bottom + 4
-        : Math.max(8, rect.top - PANEL_H - 4);
-
-      const panel = document.createElement('div');
-      panel.id = 'req-settings-panel';
-      panel.style.cssText = `
-        position:fixed; top:${topPos}px; left:${rect.left - 240}px;
-        background:#fff; border:1px solid var(--lumo-contrast-10pct,#e3e5e8);
-        border-radius:10px; box-shadow:0 6px 28px rgba(0,0,0,0.14);
-        z-index:1200; width:340px; font-family:inherit;
-      `;
-
-      const uid  = 'rqs-' + stageIdx + '-' + reqIdx;
-      const crit = req.criteria || 'all';
-      const ord  = req.order    || 'sequential';
-
-      panel.innerHTML = `
-        <div style="padding:18px 20px 14px;">
-          <div style="font-size:15px;font-weight:700;color:var(--lumo-body-text-color);margin-bottom:4px;">Activity Completion Settings</div>
-          <div style="font-size:13px;color:var(--lumo-secondary-text-color,#6a6f76);line-height:1.4;">Configure how learners complete Activities in this Requirement</div>
-        </div>
-        <div style="border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);"></div>
-        <div style="padding:16px 20px 0;">
-          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Activity Completion Criteria</div>
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px;font-size:14px;">
-            <input type="radio" name="${uid}-criteria" value="all" ${crit === 'all' ? 'checked' : ''}
-              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
-            Complete all activities
-          </label>
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
-            <input type="radio" name="${uid}-criteria" value="specific" ${crit === 'specific' ? 'checked' : ''}
-              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
-            Complete a specific number of activities
-          </label>
-        </div>
-        <div style="border-top:1px solid var(--lumo-contrast-10pct,#e3e5e8);margin:16px 0 0;"></div>
-        <div style="padding:16px 20px 20px;">
-          <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Activity Completion Order</div>
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:10px;font-size:14px;">
-            <input type="radio" name="${uid}-order" value="sequential" ${ord === 'sequential' ? 'checked' : ''}
-              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
-            Sequential (Complete in listed order)
-          </label>
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
-            <input type="radio" name="${uid}-order" value="any" ${ord === 'any' ? 'checked' : ''}
-              style="width:18px;height:18px;accent-color:var(--lumo-primary-color,#0271ce);cursor:pointer;flex-shrink:0;">
-            Any Order
-          </label>
-        </div>
-      `;
-
-      document.body.appendChild(panel);
-
-      // Stop panel-internal clicks from triggering the outside-click close handler
-      panel.addEventListener('click', ev => ev.stopPropagation());
-
-      // Wire radio changes → update model + show footer
-      panel.querySelectorAll(`[name="${uid}-criteria"]`).forEach(r =>
-        r.addEventListener('change', () => {
-          stages[stageIdx].requirements[reqIdx].criteria = r.value;
-          _markReqDirty(stageIdx, reqIdx);
-          renderStageList();
-        })
-      );
-      panel.querySelectorAll(`[name="${uid}-order"]`).forEach(r =>
-        r.addEventListener('change', () => {
-          stages[stageIdx].requirements[reqIdx].order = r.value;
-          _markReqDirty(stageIdx, reqIdx);
-          renderStageList();
-        })
-      );
-
-      // Clamp so panel doesn't go off-screen left
-      const panelRect = panel.getBoundingClientRect();
-      if (panelRect.left < 8) panel.style.left = '8px';
-
-      setTimeout(() => document.addEventListener('click', () => panel.remove(), { once: true }), 10);
-    }
-
-    function reqMenu(e, stageIdx) {
+    function reqMenu(e) {
       e.stopPropagation();
       const existing = document.getElementById('req-ctx-menu');
       if (existing) existing.remove();
@@ -2143,8 +2010,8 @@
         z-index:1000; min-width:220px; overflow:hidden; font-size:13px;
       `;
       const items = [
-        { label: 'Add Existing Requirement', fn: () => openRequirementPicker(stageIdx) },
-        { label: 'Create New Requirement',   fn: () => addRequirementToStage(stageIdx) },
+        { label: 'Add Existing Requirement', fn: () => openRequirementPicker() },
+        { label: 'Create New Requirement',   fn: () => addRequirement() },
       ];
       items.forEach(({ label, fn }) => {
         const item = document.createElement('div');
@@ -2160,31 +2027,28 @@
     }
 
     function updateStats() {
-      const stageCount = stages.length;
-      const reqCount   = stages.reduce((s, st) => s + st.requirements.length, 0);
-      const actCount   = stages.reduce((s, st) => st.requirements.reduce((r, req) => r + req.activities.length, s), 0);
-      const hours      = stages.reduce((s, st) => s + st.hours, 0);
-      const stagesEl = document.getElementById('stat-stages');
+      const reqCount = qualReqs.length;
+      const actCount = qualReqs.reduce((s, req) => s + req.activities.length, 0);
+      const hours    = qualReqs.reduce((s, req) => s + reqHours(req), 0);
       const reqsEl   = document.getElementById('stat-reqs');
       const actsEl   = document.getElementById('stat-acts');
       const hoursEl  = document.getElementById('stat-hours');
-      if (stagesEl) stagesEl.textContent = `${stageCount} Objective${stageCount !== 1 ? 's' : ''}`;
       if (reqsEl)   reqsEl.textContent   = `${reqCount} Requirement${reqCount !== 1 ? 's' : ''}`;
       if (actsEl)   actsEl.textContent   = `${actCount} Activit${actCount !== 1 ? 'ies' : 'y'}`;
       if (hoursEl)  hoursEl.textContent  = formatDuration(hours);
     }
 
-    // ── Stage structure rail ───────────────────────────────────
+    // ── Requirement structure rail ─────────────────────────────
     function renderRail() {
       const list = document.getElementById('rail-list');
       if (!list) return;
       list.innerHTML = '';
-      stages.forEach((stage, i) => {
+      qualReqs.forEach((req, i) => {
         const item = document.createElement('div');
         item.className = 'rail-item';
-        item.innerHTML = `<span class="rail-num">${i + 1}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${stage.name || 'Untitled Stage'}</span>`;
+        item.innerHTML = `<span class="rail-num">${i + 1}</span><span class="rail-item__label">${req.name || 'Untitled Requirement'}</span>`;
         item.addEventListener('click', () => {
-          const cards = document.querySelectorAll('.stage-card');
+          const cards = document.querySelectorAll('.req-card');
           if (cards[i]) cards[i].scrollIntoView({ behavior:'smooth', block:'start' });
         });
         list.appendChild(item);
@@ -2192,18 +2056,7 @@
     }
 
     // ── Confirmation screen ────────────────────────────────────
-    function buildConfirmationScreen(title, desc, stageCount, reqCount, actCount, hours) {
-      const type = currentBuilderType;
-
-      document.getElementById('confirm-title').textContent =
-        type === 'learning-path' ? 'Learning Path Created Successfully!' : 'Qualification Created Successfully!';
-
-      document.getElementById('btn-confirm-manage').textContent =
-        type === 'learning-path' ? 'Manage Learning Paths' : 'Manage Qualifications';
-
-      document.getElementById('btn-confirm-assign').textContent =
-        type === 'learning-path' ? 'Assign this Learning Path' : 'Assign this Qualification';
-
+    function buildConfirmationScreen(title, desc, reqCount, actCount, hours) {
       document.getElementById('confirm-lp-name').textContent = title;
       document.getElementById('confirm-lp-desc').textContent =
         desc || 'No description provided.';
@@ -2212,7 +2065,6 @@
       const hrsDisplay = formatDuration(hours);
       statsEl.innerHTML = `
         <span class="stat-pill"><i class="fa-regular fa-clock"></i> ${hrsDisplay}</span>
-        <span class="stat-pill"><i class="fa-solid fa-layer-group"></i> ${stageCount} Stage${stageCount !== 1 ? 's' : ''}</span>
         <span class="stat-pill"><i class="fa-solid fa-list-check"></i> ${reqCount} Requirement${reqCount !== 1 ? 's' : ''}</span>
         <span class="stat-pill"><i class="fa-solid fa-play"></i> ${actCount} Activit${actCount !== 1 ? 'ies' : 'y'}</span>
       `;
@@ -2223,9 +2075,6 @@
       data = data || QUAL_DATA;
       const tbody = document.getElementById('qual-tbody');
       tbody.innerHTML = data.map((item, idx) => {
-        const isLP   = item.type === 'learning-path';
-        const icon   = isLP ? 'fa-book-open' : 'fa-graduation-cap';
-        const label  = isLP ? 'Learning Path' : 'Qualification';
         const active = item.status === 'published';
         const locHtml = item.location
           ? `<span style="color:#9ca3af;">.\\</span><a class="mgt-loc-link" href="#">${item.location}</a>`
@@ -2234,7 +2083,7 @@
           <tr>
             <td class="mgt-col-actions">
               <div class="mgt-row-actions">
-                <button class="mgt-icon-btn blue" title="Edit" onclick="openBuilder('${item.type}', QUAL_DATA[${idx}])">
+                <button class="mgt-icon-btn blue" title="Edit" onclick="openBuilder(QUAL_DATA[${idx}])">
                   <i class="fa-solid fa-pencil" style="font-size:13px;"></i>
                 </button>
                 <button class="mgt-icon-btn" title="Delete">
@@ -2244,11 +2093,10 @@
             </td>
             <td class="mgt-col-name">
               <div class="mgt-name-wrap">
-                <i class="fa-solid ${icon}" style="font-size:13px;color:#6b7280;flex-shrink:0;"></i>
-                <span class="mgt-name-link" onclick="openBuilder('${item.type}', QUAL_DATA[${idx}])">${item.name}</span>
+                <i class="fa-solid fa-graduation-cap" style="font-size:13px;color:#6b7280;flex-shrink:0;"></i>
+                <span class="mgt-name-link" onclick="openBuilder(QUAL_DATA[${idx}])">${item.name}</span>
               </div>
             </td>
-            <td class="mgt-col-type">${label}</td>
             <td class="mgt-col-comp">All Items</td>
             <td class="mgt-col-order">Any Order</td>
             <td class="mgt-col-reqs" style="display:table-cell;">
@@ -2274,54 +2122,50 @@
     // ── DOMContentLoaded wiring ────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
       renderManageTable();
-      // Hide the shell subheader on initial load (table page is active)
-      window.parent.postMessage({ type: 'shell:subheader', show: false }, '*');
 
       document.getElementById('btn-builder-cancel')
         .addEventListener('click', () => confirmLeaveBuilder(() => showScreen('manage')));
 
+      // Hero title: Enter commits instead of inserting a newline
+      const qualTitleEl = document.getElementById('qual-title');
+      qualTitleEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); qualTitleEl.blur(); }
+      });
+      qualTitleEl.addEventListener('blur', () => {
+        qualTitleEl.textContent = qualTitleEl.textContent.trim();
+      });
+
       document.getElementById('btn-builder-save')
         .addEventListener('click', () => {
-          const title  = document.getElementById('lp-title').value || 'Untitled';
+          const title  = document.getElementById('qual-title').textContent.trim() || 'Untitled';
           const desc   = document.getElementById('lp-description').value || '';
-          const stageCount = stages.length;
-          const reqCount   = stages.reduce((s, st) => s + st.requirements.length, 0);
-          const actCount   = stages.reduce((s, st) => st.requirements.reduce((r, req) => r + req.activities.length, s), 0);
-          const hours      = stages.reduce((s, st) => s + st.hours, 0);
+          const reqCount = qualReqs.length;
+          const actCount = qualReqs.reduce((s, req) => s + req.activities.length, 0);
+          const hours    = qualReqs.reduce((s, req) => s + reqHours(req), 0);
 
           // Persist to localStorage for Training tab
-          const flatReqs = [];
-          stages.forEach(stage => {
-            stage.requirements.forEach(req => {
-              flatReqs.push({
-                name: req.name,
-                activities: req.activities.map(a => ({
-                  name: a.name,
-                  type: a.type || 'Computer Based',
-                  hours: a.hours || 0,
-                })),
-              });
-            });
-          });
+          const flatReqs = qualReqs.map(req => ({
+            name: req.name,
+            activities: req.activities.map(a => ({
+              name: a.name,
+              type: a.type || 'Computer Based',
+              hours: a.hours || 0,
+            })),
+          }));
           localStorage.setItem('ct_training_plan', JSON.stringify({
             title,
             desc,
-            type: currentBuilderType,
+            type: 'qualification',
             savedAt: new Date().toISOString(),
             requirements: flatReqs,
             totalHours: hours,
           }));
 
-          buildConfirmationScreen(title, desc, stageCount, reqCount, actCount, hours);
+          buildConfirmationScreen(title, desc, reqCount, actCount, hours);
           showScreen('confirm');
         });
 
-      document.getElementById('btn-add-stage').addEventListener('click', () => {
-        stages.push({ name: `Stage ${stages.length + 1}`, hours: 0, requirements: [] });
-        renderStageList();
-        const stageList = document.getElementById('stage-list');
-        if (stageList.lastElementChild) stageList.lastElementChild.scrollIntoView({ behavior:'smooth' });
-      });
+      document.getElementById('btn-add-req').addEventListener('click', (e) => reqMenu(e));
 
       document.getElementById('btn-confirm-manage')
         .addEventListener('click', () => showScreen('manage'));
@@ -2332,626 +2176,8 @@
         });
     });
 
-    // ── LP Creation Choice Modal ──────────────────────────────────────────────
-    function showLPChoiceModal() {
-      document.getElementById('lp-choice-scrim')?.remove();
-      const scrim = document.createElement('div');
-      scrim.id = 'lp-choice-scrim';
-      scrim.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;font-family:"Open Sans",sans-serif;';
-      scrim.innerHTML = `
-        <div style="background:#fff;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,0.22);width:100%;max-width:680px;padding:36px 36px 32px;position:relative;">
-          <button id="lp-choice-close" style="position:absolute;top:20px;right:22px;background:none;border:none;cursor:pointer;font-size:22px;color:#9ca3af;line-height:1;padding:4px 6px;" title="Close">×</button>
-          <h2 style="font-size:22px;font-weight:700;color:#111827;margin:0 0 6px;">Create a Learning Path</h2>
-          <p style="font-size:14px;color:#6b7280;margin:0 0 28px;">Choose how you'd like to build your learning path.</p>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <!-- Build from Scratch -->
-            <button id="lp-choice-scratch" style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:28px 20px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;font-family:inherit;"
-              onmouseover="this.style.borderColor='#3b82f6';this.style.boxShadow='0 4px 16px rgba(59,130,246,0.12)'"
-              onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
-              <div style="width:64px;height:64px;background:#f3f4f6;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-              </div>
-              <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">Build from Scratch</div>
-              <p style="font-size:13px;color:#6b7280;line-height:1.55;margin:0;">Start from a blank template. Define stages, requirements, and activities yourself.</p>
-            </button>
-            <!-- Build with AI -->
-            <button id="lp-choice-ai" style="background:#fff;border:1.5px solid #e5e7eb;border-radius:14px;padding:28px 20px 24px;text-align:center;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;font-family:inherit;"
-              onmouseover="this.style.borderColor='#00639a';this.style.boxShadow='0 4px 16px rgba(0,99,154,0.12)'"
-              onmouseout="this.style.borderColor='#e5e7eb';this.style.boxShadow='none'">
-              <div style="width:64px;height:64px;background:#cee5ff;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00639a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M15 3l1.5 3 3 1.5-3 1.5L15 12l-1.5-3-3-1.5 3-1.5L15 3z"/>
-                  <path d="M5 8l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/>
-                  <path d="M12 16l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/>
-                </svg>
-              </div>
-              <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;">Build with AI</div>
-              <p style="font-size:13px;color:#6b7280;line-height:1.55;margin:0;">Answer a few questions and AI will generate a structured learning path for you to refine.</p>
-            </button>
-          </div>
-        </div>`;
-      document.body.appendChild(scrim);
-      scrim.querySelector('#lp-choice-close').addEventListener('click', () => scrim.remove());
-      scrim.addEventListener('click', (e) => { if (e.target === scrim) scrim.remove(); });
-      scrim.querySelector('#lp-choice-scratch').addEventListener('click', () => {
-        scrim.remove();
-        openBuilder('learning-path');
-      });
-      scrim.querySelector('#lp-choice-ai').addEventListener('click', () => {
-        scrim.remove();
-        showAIIntakeModal();
-      });
-    }
-
-    // ── AI Intake Modal ───────────────────────────────────────────────────────
-    function showAIIntakeModal(prefill = {}) {
-      document.getElementById('ai-intake-scrim')?.remove();
-
-      const TOPICS = ['Safety','Compliance','Technical Skills','Soft Skills'];
-      const PILL_KEYWORDS = {
-        'Safety':          ['safety','hazard','osha','accident','ppe','emergency','injury','risk','protect'],
-        'Compliance':      ['complian','regulatory','regulation','legal','audit','policy','standard','certif'],
-        'Technical Skills':['technician','technical','operator','equipment','machine','machinist','operation','maintenance','mechanic','repair','tool','engineer','fabricat','assembl','weld'],
-        'Soft Skills':     ['communicat','present','report','verbal','written','document','brief','speak','listen','team','collaborat','cooperat','group','together','partner','peer','colleague','conflict','resolv','mediat','disput','negotiat','disagree','tension','lead','manager','supervisor','coach','mentor','oversee','direct','management'],
-      };
-
-      const activePills  = new Set(); // auto-detected from textarea text
-      const customSkills = new Set(); // user-added custom skills
-
-      // Pill HTML — read-only indicators driven by text detection + "Add skill" button
-      const pillsHTML = TOPICS.map(t =>
-        `<span class="ai-pill" data-topic="${t}" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:400;color:#3f4852;border:1px solid rgba(111,120,131,0.3);background:transparent;font-family:'Nunito Sans',sans-serif;pointer-events:none;">${t}</span>`
-      ).join('') +
-      `<button id="ai-add-skill-btn" style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border:1px dashed rgba(111,120,131,0.4);border-radius:99px;background:transparent;font-size:12px;font-family:'Nunito Sans',sans-serif;color:#73828c;cursor:pointer;transition:border-color 0.15s,color 0.15s;"><span class="material-symbols-outlined" style="font-size:13px;">add</span>Add skill</button>`;
-
-      const scrim = document.createElement('div');
-      scrim.id = 'ai-intake-scrim';
-      scrim.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(24,28,30,0.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:16px;';
-
-      scrim.innerHTML = `
-        <section class="bg-surface-white w-full rounded-xl shadow-xl border border-outline-variant flex flex-col overflow-hidden max-w-[1024px]" style="height:88vh;font-family:'Nunito Sans',sans-serif;">
-
-          <!-- Header -->
-          <header style="padding:12px 32px;background:#f7fafd;border-bottom:1px solid #e0e3e6;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div style="width:36px;height:36px;border-radius:8px;background:#cee5ff;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <span class="material-symbols-outlined" style="font-size:20px;color:#004a76;font-variation-settings:'FILL' 1;">auto_awesome</span>
-              </div>
-              <div>
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
-                  <h1 style="margin:0;font-size:18px;font-weight:700;color:#181c1e;line-height:1.2;font-family:'Nunito Sans',sans-serif;">Generate a Learning Path</h1>
-                  <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:rgba(0,99,154,0.08);color:#00639a;font-size:10px;font-weight:700;border-radius:99px;letter-spacing:0.06em;text-transform:uppercase;border:1px solid rgba(0,99,154,0.18);flex-shrink:0;">
-                    <span class="material-symbols-outlined" style="font-size:11px;font-variation-settings:'FILL' 1;">bolt</span>
-                    Vector AI
-                  </span>
-                </div>
-                <p style="margin:0;font-size:13px;color:#73828c;line-height:1.4;font-family:'Nunito Sans',sans-serif;">Describe the role and goals to generate a structured curriculum.</p>
-              </div>
-            </div>
-            <button id="ai-intake-close" style="padding:6px;background:none;border:none;cursor:pointer;color:#73828c;border-radius:99px;display:flex;align-items:center;justify-content:center;" class="hover:bg-surface-container-high transition-colors">
-              <span class="material-symbols-outlined" style="font-size:22px;">close</span>
-            </button>
-          </header>
-
-          <!-- Main Content -->
-          <div class="flex-1 overflow-hidden flex flex-col" style="min-height:0;">
-            <div class="px-md pt-sm pb-sm flex flex-col gap-sm flex-1" style="min-height:0;overflow:hidden;">
-
-              <!-- Role + Timeline -->
-              <div class="grid grid-cols-2 gap-md flex-shrink-0">
-                <div class="flex flex-col gap-sm">
-                  <label class="font-label-md text-label-md text-on-surface-variant">Target Role</label>
-                  <input id="ai-role" type="text" placeholder="e.g., Factory Worker to Team Lead"
-                    class="w-full h-10 px-md border border-outline-variant rounded-lg outline-none transition-all font-body-md text-body-sm"
-                    style="font-family:inherit;" />
-                </div>
-                <div class="flex flex-col gap-sm">
-                  <label class="font-label-md text-label-md text-on-surface-variant">Target Timeline</label>
-                  <input id="ai-timeline" type="text" placeholder="e.g., 6–12 months"
-                    class="w-full h-10 px-md border border-outline-variant rounded-lg outline-none transition-all font-body-md text-body-sm"
-                    style="font-family:inherit;" />
-                </div>
-              </div>
-
-              <!-- Description + Suggestions -->
-              <div class="flex flex-col gap-sm flex-1" style="min-height:0;">
-                <p class="font-label-md text-label-md text-on-surface-variant flex-shrink-0" style="font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">Describe your Learning Goals</p>
-                <div id="ai-input-area" class="flex gap-md flex-1" style="min-height:0;">
-
-                  <!-- Textarea column -->
-                  <div class="flex-1 flex flex-col" style="min-height:0;position:relative;">
-                    <button id="ai-show-sugg-btn"
-                      style="display:none;position:absolute;top:0;right:0;z-index:1;align-items:center;gap:4px;padding:3px 10px;background:rgba(30,167,253,0.1);color:#00639a;border:1px solid rgba(30,167,253,0.2);border-radius:99px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.05em;text-transform:uppercase;">
-                      <span class="material-symbols-outlined" style="font-size:12px;font-variation-settings:'FILL' 1;">auto_awesome</span>
-                      Suggestions
-                    </button>
-                    <textarea id="ai-goals"
-                      class="flex-1 w-full p-md border border-outline-variant rounded-xl outline-none transition-all resize-none font-body-md text-body-sm leading-relaxed"
-                      style="min-height:100px;font-family:inherit;scrollbar-width:thin;scrollbar-color:#bec7d3 transparent;overflow-y:auto;"
-                      placeholder="Describe the role responsibilities, specific tools, and desired outcomes..."></textarea>
-                    <div class="mt-sm flex-shrink-0" style="display:flex;align-items:center;gap:8px;">
-                      <label for="ai-pdf-input"
-                        class="flex items-center gap-2 px-md border border-outline-variant text-on-surface-variant font-label-md text-label-md rounded-lg hover:bg-surface-container-low transition-colors"
-                        style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;height:44px;">
-                        <span class="material-symbols-outlined" style="font-size:20px;">attach_file</span>
-                        Upload Job Description
-                      </label>
-                      <input id="ai-pdf-input" type="file" accept=".pdf,.doc,.docx,.txt" style="display:none;" />
-                      <span id="ai-pdf-name" class="font-body-sm text-text-muted" style="font-size:12px;"></span>
-                    </div>
-                  </div>
-
-                  <!-- Suggestions sidebar -->
-                  <aside id="ai-suggestions-col" class="bg-surface-container-low rounded-xl p-sm border border-outline-variant/30 flex flex-col gap-sm" style="width:300px;flex-shrink:0;display:flex;min-height:0;height:100%;">
-                    <div class="flex items-center justify-between border-b border-outline-variant/30 pb-sm flex-shrink-0" style="display:flex;align-items:center;justify-content:space-between;">
-                      <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2 uppercase tracking-wide" style="display:flex;align-items:center;gap:8px;">
-                        <span class="material-symbols-outlined text-primary" style="font-size:16px;font-variation-settings:'FILL' 1;">auto_awesome</span>
-                        Suggestions<span id="ai-sugg-topic" style="text-transform:none;color:#00639a;font-weight:600;letter-spacing:0;font-size:11px;margin-left:4px;"></span>
-                      </span>
-                      <button id="ai-hide-sugg-btn"
-                        class="text-text-muted hover:text-on-surface transition-colors font-label-sm"
-                        style="background:none;border:none;cursor:pointer;font-size:11px;font-weight:700;display:flex;align-items:center;gap:3px;font-family:inherit;letter-spacing:0.02em;">
-                        Hide
-                        <span class="material-symbols-outlined" style="font-size:14px;">chevron_right</span>
-                      </button>
-                    </div>
-                    <div id="ai-suggestion-cards" class="flex flex-col gap-sm flex-1" style="min-height:0;overflow:hidden;">
-                      <!-- populated by renderSuggestions() -->
-                    </div>
-                  </aside>
-
-                </div>
-              </div>
-
-              <!-- Detected Skills -->
-              <div style="border-top:1px solid #e0e3e6;padding-top:10px;flex-shrink:0;display:flex;flex-direction:column;gap:7px;">
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <span class="material-symbols-outlined" style="font-size:14px;color:#73828c;">psychology</span>
-                  <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#73828c;">Detected skills</span>
-                </div>
-                <div id="ai-pills-row" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">${pillsHTML}</div>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- More info panel (hidden) -->
-          <div id="ai-more-info-panel" style="display:none;" class="px-xl pb-lg bg-surface-bright border-t border-outline-variant">
-            <div class="p-md bg-surface-container-low rounded-lg border border-outline-variant/30 font-body-sm text-on-surface-variant leading-relaxed" style="font-size:12px;">
-              <strong class="text-on-surface block mb-1">About Vector AI Recommendations</strong>
-              Vector AI analyzes your role description and learning goals to suggest a structured learning path. Recommendations are based on common industry patterns and are a starting framework — not a final curriculum. Review all generated stages, requirements, and activities before publishing to ensure alignment with your organization's specific needs and compliance standards.
-            </div>
-          </div>
-
-          <!-- Footer -->
-          <footer class="px-xl py-sm bg-surface-bright border-t border-outline-variant flex items-center justify-between flex-shrink-0" style="display:flex;align-items:center;justify-content:space-between;">
-            <div class="flex items-start gap-2" style="display:flex;align-items:flex-start;gap:8px;max-width:480px;">
-              <span class="material-symbols-outlined text-text-muted mt-0.5" style="font-size:18px;flex-shrink:0;">info</span>
-              <p class="font-body-sm text-text-muted leading-relaxed" style="font-size:12px;">
-                Vector AI content is a starting point. Review recommendations before publishing to your team.
-                <button id="ai-more-info-btn" class="text-primary hover:underline font-label-sm" style="background:none;border:none;cursor:pointer;font-size:12px;color:#00639a;font-family:inherit;">Learn more</button>
-              </p>
-            </div>
-            <div class="flex items-center gap-md" style="display:flex;align-items:center;gap:16px;">
-              <button id="ai-intake-cancel"
-                class="px-lg border border-outline-variant text-secondary font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-all"
-                style="height:44px;background:transparent;cursor:pointer;font-family:inherit;">
-                Cancel
-              </button>
-              <button id="ai-intake-generate"
-                class="px-lg bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-all flex items-center gap-2"
-                style="height:44px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;">
-                <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">bolt</span>
-                Generate Path
-              </button>
-            </div>
-          </footer>
-
-        </section>`;
-
-      document.body.appendChild(scrim);
-
-      // ── Pill helpers ──────────────────────────────────────────────────────────
-      function renderPill(topic) {
-        const pill = scrim.querySelector(`.ai-pill[data-topic="${CSS.escape(topic)}"]`);
-        if (!pill) return;
-        const isActive  = activePills.has(topic);
-        const isPrimary = isActive && topic === _primaryTopic;
-
-        if (isPrimary) {
-          pill.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;background:rgba(0,99,154,0.08);color:#00639a;border:1px solid rgba(0,99,154,0.25);pointer-events:none;font-family:'Nunito Sans',sans-serif;";
-          pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1;">auto_awesome</span>${topic}`;
-        } else if (isActive) {
-          pill.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;background:#f0fdf4;color:#15803d;border:1px solid rgba(21,128,61,0.2);pointer-events:none;font-family:'Nunito Sans',sans-serif;";
-          pill.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;font-variation-settings:'FILL' 1;">check_circle</span>${topic}`;
-        } else {
-          pill.style.cssText = "display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:400;color:#3f4852;border:1px solid rgba(111,120,131,0.3);background:transparent;pointer-events:none;font-family:'Nunito Sans',sans-serif;";
-          pill.innerHTML = topic;
-        }
-      }
-
-      function setPillActive(topic, active, isPrimary) {
-        if (active) activePills.add(topic); else activePills.delete(topic);
-        if (isPrimary && active) _primaryTopic = topic;
-        renderPill(topic);
-      }
-
-      // ── Auto-detect from textarea (primary = topic of earliest keyword match) ──
-      let _primaryTopic = null;
-      function findPrimaryTopic(text) {
-        const lower = text.toLowerCase();
-        let primary = null;
-        let primaryPos = Infinity;
-        for (const topic of TOPICS) {
-          for (const kw of (PILL_KEYWORDS[topic] || [])) {
-            const pos = lower.indexOf(kw);
-            if (pos >= 0 && pos < primaryPos) { primaryPos = pos; primary = topic; }
-          }
-        }
-        return primary;
-      }
-      function detectFromText(text) {
-        _primaryTopic = findPrimaryTopic(text);
-        const lower = text.toLowerCase();
-        TOPICS.forEach(topic => {
-          const keywords = PILL_KEYWORDS[topic] || [];
-          const matched  = keywords.some(kw => lower.includes(kw));
-          if (matched) activePills.add(topic); else activePills.delete(topic);
-          renderPill(topic);
-        });
-      }
-
-      // ── Suggestion panel data ─────────────────────────────────────────────────
-      const DEFAULT_SUGGESTIONS = [
-        'I want to transition from a floor technician to a team lead within 12 months, focusing on leadership, safety awareness, and compliance.',
-        'Help me build a learning path for equipment safety, hazard identification, and OSHA compliance requirements for my current operator role.',
-        "I'm working toward a project manager position and need to develop communication, teamwork, and strategic decision-making skills.",
-      ];
-
-      // Suggestions are phrased as job-description sentences the user would write
-      const TOPIC_COMPLETIONS = {
-        'Safety': [
-          'Employees must be aware of OSHA 30-level requirements and complete site-specific safety orientation before any hands-on work.',
-          'Workers are expected to identify and report workplace hazards immediately and know how to access Material Safety Data Sheets (MSDS).',
-          'The role requires correct use of all personal protective equipment (PPE) including respirators, hard hats, and safety harnesses.',
-          'All personnel must be trained in emergency evacuation procedures, fire suppression, and first aid response protocols.',
-        ],
-        'Compliance': [
-          'Employees need to be aware of OSHA 30-level regulations and pass a regulatory knowledge assessment on an annual basis.',
-          'Staff are expected to maintain accurate training records and supporting documentation to pass internal and external audits.',
-          'Workers must be familiar with all applicable federal and state compliance requirements relevant to their job function.',
-          'The role requires completing mandatory compliance modules and acknowledging updated policy changes in writing each quarter.',
-        ],
-        'Technical Skills': [
-          'Operators must demonstrate proficiency in machine startup, shutdown, and preventive maintenance procedures per SOPs.',
-          'Workers need to interpret technical drawings, schematics, and equipment manuals relevant to their assigned systems.',
-          'Employees are expected to troubleshoot equipment malfunctions and escalate persistent issues to the maintenance team.',
-          'The role requires calibrating measurement tools and maintaining equipment logs in accordance with quality standards.',
-        ],
-        'Soft Skills': [
-          'Supervisors must facilitate daily team huddles, communicate shift goals clearly, and follow up on action items before the next shift.',
-          'Employees are expected to communicate shift handoffs, safety concerns, and production updates clearly and in a timely manner.',
-          'Workers must contribute positively to team culture by sharing knowledge, mentoring peers, and approaching conflict with a solution-focused mindset.',
-          'The role requires preparing written incident reports, shift logs, and status summaries, and presenting operational data to cross-functional teams.',
-        ],
-      };
-
-      // Returns { mode, topic, items } — suggests prompts for skills NOT yet covered
-      function getSuggestions() {
-        const ta = scrim.querySelector('#ai-goals');
-        const hasText = ta && ta.value.trim().length >= 10;
-
-        if (!hasText) {
-          return { mode: 'starter', topic: null, items: DEFAULT_SUGGESTIONS.map(t => ({ topic: null, text: t })) };
-        }
-
-        const missing = TOPICS.filter(t => !activePills.has(t));
-        if (missing.length === 0) {
-          return { mode: 'complete', topic: null, items: [] };
-        }
-
-        // One card per missing topic (up to 3), then fill from secondary sentences
-        const items = missing.slice(0, 3).map(t => ({ topic: t, text: TOPIC_COMPLETIONS[t][0] }));
-        if (items.length < 3 && missing.length > 0) {
-          const extra = TOPIC_COMPLETIONS[missing[0]];
-          for (let i = 1; i < extra.length && items.length < 3; i++) {
-            items.push({ topic: missing[0], text: extra[i] });
-          }
-        }
-        return { mode: 'missing', topic: missing[0], items };
-      }
-
-      function renderSuggestions(result) {
-        const topicLabel = scrim.querySelector('#ai-sugg-topic');
-        const container  = scrim.querySelector('#ai-suggestion-cards');
-        if (!container) return;
-
-        if (result.mode === 'complete') {
-          if (topicLabel) topicLabel.textContent = '';
-          container.innerHTML = `
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px 16px;text-align:center;">
-              <span class="material-symbols-outlined" style="font-size:30px;color:#15803d;font-variation-settings:'FILL' 1;">task_alt</span>
-              <p style="font-size:13px;font-weight:700;color:#181c1e;margin:0;font-family:'Nunito Sans',sans-serif;">All skill areas covered</p>
-              <p style="font-size:12px;color:#73828c;margin:0;line-height:1.5;font-family:'Nunito Sans',sans-serif;">Your description covers all four areas. You're ready to generate a path.</p>
-            </div>`;
-          return;
-        }
-
-        const primaryMissing = result.items.find(i => i.topic)?.topic;
-        if (topicLabel) topicLabel.textContent = (result.mode === 'missing' && primaryMissing) ? ` · ${primaryMissing}` : '';
-
-        container.innerHTML = result.items.map((s, i) => {
-          const tag = s.topic
-            ? `<span style="display:inline-block;padding:1px 7px;background:rgba(0,99,154,0.08);color:#00639a;font-size:10px;font-weight:700;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px;font-family:'Nunito Sans',sans-serif;">${s.topic}</span>`
-            : '';
-          return `<button class="ai-sugg-card" data-index="${i}"
-            style="width:100%;text-align:left;background:#fff;border:1px solid #e0e3e6;border-radius:8px;cursor:pointer;font-family:'Nunito Sans',sans-serif;padding:8px 10px;flex-shrink:0;transition:border-color 0.15s,box-shadow 0.15s;">
-            ${tag}<p style="font-size:12px;line-height:1.45;margin:0;color:#2e3438;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${s.text}</p>
-          </button>`;
-        }).join('');
-
-        container.querySelectorAll('.ai-sugg-card').forEach(btn => {
-          btn.addEventListener('mouseover', () => { btn.style.borderColor = 'rgba(0,99,154,0.4)'; btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)'; });
-          btn.addEventListener('mouseout',  () => { btn.style.borderColor = '#e0e3e6'; btn.style.boxShadow = 'none'; });
-          btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.index);
-            const ta  = scrim.querySelector('#ai-goals');
-            const cur = ta.value.trimEnd();
-            ta.value  = cur + (cur ? ' ' : '') + result.items[idx].text;
-            ta.focus();
-            detectFromText(ta.value);
-            renderSuggestions(getSuggestions());
-          });
-        });
-      }
-
-      // Initialize suggestions
-      renderSuggestions(getSuggestions());
-
-      // ── Textarea input ────────────────────────────────────────────────────────
-      scrim.querySelector('#ai-goals').addEventListener('input', (e) => {
-        detectFromText(e.target.value);
-        renderSuggestions(getSuggestions());
-      });
-
-      // ── PDF upload simulation ─────────────────────────────────────────────────
-      const pdfInput = scrim.querySelector('#ai-pdf-input');
-      const pdfName  = scrim.querySelector('#ai-pdf-name');
-      pdfInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        pdfName.textContent = 'Scanning…';
-        pdfName.style.color = '#00639a';
-        const shuffled = [...TOPICS].sort(() => Math.random() - 0.5);
-        const count = Math.floor(Math.random() * 2) + 4;
-        let i = 0;
-        const interval = setInterval(() => {
-          if (i >= count) {
-            clearInterval(interval);
-            pdfName.textContent = file.name;
-            pdfName.style.color = '#15803d';
-            // Infer primary topic from first activated pill if textarea didn't already set one
-            if (!_primaryTopic && activePills.size > 0) {
-              _primaryTopic = [...activePills][0];
-              setPillActive(_primaryTopic, true, true);
-            }
-            renderSuggestions(getSuggestions());
-            return;
-          }
-          setPillActive(shuffled[i], true, false);
-          i++;
-        }, 280);
-      });
-
-      // ── Hide / show suggestions ───────────────────────────────────────────────
-      scrim.querySelector('#ai-hide-sugg-btn').addEventListener('click', () => {
-        scrim.querySelector('#ai-suggestions-col').style.display = 'none';
-        scrim.querySelector('#ai-show-sugg-btn').style.display = 'inline-flex';
-      });
-      scrim.querySelector('#ai-show-sugg-btn').addEventListener('click', () => {
-        scrim.querySelector('#ai-suggestions-col').style.display = 'flex';
-        scrim.querySelector('#ai-show-sugg-btn').style.display = 'none';
-      });
-
-      // ── More info toggle ──────────────────────────────────────────────────────
-      scrim.querySelector('#ai-more-info-btn').addEventListener('click', () => {
-        const panel = scrim.querySelector('#ai-more-info-panel');
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-      });
-
-      // ── Close / cancel ────────────────────────────────────────────────────────
-      scrim.querySelector('#ai-intake-close').addEventListener('click', () => scrim.remove());
-      scrim.querySelector('#ai-intake-cancel').addEventListener('click', () => scrim.remove());
-      scrim.addEventListener('click', (e) => { if (e.target === scrim) scrim.remove(); });
-
-      // ── Custom skill: "Add skill" button ──────────────────────────────────────
-      function createAddBtn() {
-        const b = document.createElement('button');
-        b.id = 'ai-add-skill-btn';
-        b.style.cssText = "display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border:1px dashed rgba(111,120,131,0.4);border-radius:99px;background:transparent;font-size:12px;font-family:'Nunito Sans',sans-serif;color:#73828c;cursor:pointer;transition:border-color 0.15s,color 0.15s;";
-        b.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;">add</span>Add skill`;
-        return b;
-      }
-
-      function attachAddSkillBtn() {
-        const btn = scrim.querySelector('#ai-add-skill-btn');
-        if (!btn) return;
-        btn.addEventListener('mouseenter', () => { btn.style.borderColor = 'rgba(0,99,154,0.45)'; btn.style.color = '#00639a'; });
-        btn.addEventListener('mouseleave', () => { btn.style.borderColor = 'rgba(111,120,131,0.4)'; btn.style.color = '#73828c'; });
-        btn.addEventListener('click', () => {
-          const pillsRow = scrim.querySelector('#ai-pills-row');
-          const widget = document.createElement('span');
-          widget.style.cssText = "display:inline-flex;align-items:center;gap:4px;padding:3px 4px 3px 12px;border:1px solid #00639a;border-radius:99px;background:rgba(0,99,154,0.05);";
-          widget.innerHTML = `<input id="ai-custom-skill-input" type="text" placeholder="Skill name" maxlength="40"
-            style="border:none;outline:none;background:transparent;font-size:12px;font-family:'Nunito Sans',sans-serif;color:#181c1e;width:90px;">
-            <button id="ai-custom-confirm" style="width:20px;height:20px;border-radius:99px;background:#00639a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <span class="material-symbols-outlined" style="font-size:13px;color:#fff;font-variation-settings:'FILL' 1;">check</span>
-            </button>`;
-          btn.replaceWith(widget);
-          const input = widget.querySelector('#ai-custom-skill-input');
-          input.focus();
-
-          function commitSkill() {
-            const val = input.value.trim();
-            if (val) {
-              customSkills.add(val);
-              const pillEl = document.createElement('span');
-              pillEl.style.cssText = "display:inline-flex;align-items:center;gap:5px;padding:4px 8px 4px 12px;border-radius:99px;font-size:12px;font-weight:700;background:#f0fdf4;color:#15803d;border:1px solid rgba(21,128,61,0.2);font-family:'Nunito Sans',sans-serif;";
-              pillEl.innerHTML = `${val}<button data-skill="${val}" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;color:#6b7280;margin-left:1px;"><span class="material-symbols-outlined" style="font-size:13px;">close</span></button>`;
-              pillEl.querySelector('button').addEventListener('click', () => {
-                customSkills.delete(val);
-                pillEl.remove();
-                renderSuggestions(getSuggestions());
-              });
-              widget.replaceWith(pillEl);
-            } else {
-              widget.remove();
-            }
-            const newBtn = createAddBtn();
-            scrim.querySelector('#ai-pills-row').appendChild(newBtn);
-            attachAddSkillBtn();
-            renderSuggestions(getSuggestions());
-          }
-
-          function cancelInput() {
-            if (!widget.isConnected) return;
-            widget.remove();
-            const newBtn = createAddBtn();
-            scrim.querySelector('#ai-pills-row').appendChild(newBtn);
-            attachAddSkillBtn();
-          }
-
-          input.addEventListener('keydown', e => {
-            if (e.key === 'Enter') { e.preventDefault(); commitSkill(); }
-            if (e.key === 'Escape') cancelInput();
-          });
-          widget.querySelector('#ai-custom-confirm').addEventListener('click', commitSkill);
-          input.addEventListener('blur', () => setTimeout(() => { if (widget.isConnected) cancelInput(); }, 160));
-        });
-      }
-
-      attachAddSkillBtn();
-
-      // ── Generate button: disabled until role is filled ────────────────────────
-      const roleInput   = scrim.querySelector('#ai-role');
-      const generateBtn = scrim.querySelector('#ai-intake-generate');
-      function updateGenerateState() {
-        const enabled = roleInput.value.trim().length > 0;
-        generateBtn.disabled = !enabled;
-        generateBtn.style.opacity   = enabled ? '1' : '0.45';
-        generateBtn.style.cursor    = enabled ? 'pointer' : 'not-allowed';
-        generateBtn.style.pointerEvents = enabled ? '' : 'none';
-      }
-      updateGenerateState();
-      roleInput.addEventListener('input', updateGenerateState);
-
-      // ── Demo prefill (optional) ────────────────────────────────────────────────
-      if (prefill && (prefill.role || prefill.timeline || prefill.goals)) {
-        if (prefill.role)     { roleInput.value = prefill.role; updateGenerateState(); }
-        if (prefill.timeline) scrim.querySelector('#ai-timeline').value = prefill.timeline;
-        if (prefill.goals) {
-          const ta = scrim.querySelector('#ai-goals');
-          ta.value = prefill.goals;
-          detectFromText(ta.value);
-          renderSuggestions(getSuggestions());
-        }
-      }
-
-      // ── Generate ──────────────────────────────────────────────────────────────
-      scrim.querySelector('#ai-intake-generate').addEventListener('click', () => {
-        const role     = roleInput.value.trim() || 'New Role';
-        const timeline = scrim.querySelector('#ai-timeline').value.trim() || '6 months';
-        const allActive = new Set([...activePills, ...customSkills]);
-        const topics   = allActive.size ? [...allActive] : TOPICS.slice(0, 2);
-        const goals    = scrim.querySelector('#ai-goals').value.trim();
-        scrim.remove();
-        showAIProcessingModal({ role, timeline, topics, goals });
-      });
-    }
-
-    // ── AI Processing Modal ───────────────────────────────────────────────────
-    function showAIProcessingModal(formData) {
-      document.getElementById('ai-processing-scrim')?.remove();
-      const scrim = document.createElement('div');
-      scrim.id = 'ai-processing-scrim';
-      scrim.style.cssText = 'position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:24px;font-family:"Open Sans",sans-serif;';
-
-      const MESSAGES = [
-        'Analyzing your goals…',
-        'Identifying relevant content…',
-        'Structuring learning objectives…',
-        'Matching requirements…',
-        'Building activity recommendations…',
-        'Finalizing your learning path…',
-      ];
-
-      scrim.innerHTML = `
-        <div style="background:#fff;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,0.22);width:100%;max-width:420px;padding:40px 36px;text-align:center;">
-          <!-- Spinner -->
-          <div style="position:relative;width:80px;height:80px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;">
-            <div id="ai-spinner-ring" style="position:absolute;inset:0;border-radius:50%;border:4px solid #e5e7eb;border-top-color:#2563eb;animation:ai-spin 0.9s linear infinite;"></div>
-            <div style="width:44px;height:44px;background:#1e40af;border-radius:50%;display:flex;align-items:center;justify-content:center;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 3l1.5 3 3 1.5-3 1.5L15 12l-1.5-3-3-1.5 3-1.5L15 3z"/>
-                <path d="M5 8l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z"/>
-              </svg>
-            </div>
-          </div>
-          <!-- Message -->
-          <div id="ai-proc-msg" style="font-size:18px;font-weight:700;color:#111827;margin-bottom:24px;min-height:28px;transition:opacity 0.4s;">Analyzing your goals…</div>
-          <!-- Progress bar -->
-          <div style="background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;margin-bottom:10px;">
-            <div id="ai-proc-bar" style="height:100%;background:#2563eb;border-radius:99px;width:8%;transition:width 0.5s ease;"></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;letter-spacing:0.05em;">
-            <span>GENERATING</span>
-            <span id="ai-proc-pct">8%</span>
-          </div>
-        </div>
-        <style>@keyframes ai-spin{to{transform:rotate(360deg)}}</style>`;
-
-      document.body.appendChild(scrim);
-
-      // Animate progress
-      let pct = 8;
-      let msgIdx = 0;
-      const bar = scrim.querySelector('#ai-proc-bar');
-      const pctEl = scrim.querySelector('#ai-proc-pct');
-      const msgEl = scrim.querySelector('#ai-proc-msg');
-
-      function advance() {
-        pct = Math.min(pct + Math.floor(Math.random() * 14) + 8, 96);
-        bar.style.width = pct + '%';
-        pctEl.textContent = pct + '%';
-
-        msgIdx = (msgIdx + 1) % MESSAGES.length;
-        msgEl.style.opacity = '0';
-        setTimeout(() => { msgEl.textContent = MESSAGES[msgIdx]; msgEl.style.opacity = '1'; }, 350);
-
-        if (pct < 96) {
-          setTimeout(advance, Math.floor(Math.random() * 600) + 600);
-        } else {
-          // Complete
-          setTimeout(() => {
-            bar.style.width = '100%';
-            pctEl.textContent = '100%';
-            msgEl.style.opacity = '0';
-            setTimeout(() => { msgEl.textContent = 'Learning path ready!'; msgEl.style.opacity = '1'; }, 350);
-            setTimeout(() => {
-              scrim.remove();
-              _openAIGeneratedBuilder(formData);
-            }, 900);
-          }, 500);
-        }
-      }
-      setTimeout(advance, 900);
-    }
-
-    // ── CNC Machinist full learning path dataset ──────────────────────────────
-    function buildCNCStages() {
+    // ── CNC Machinist sample dataset (manual demo data) ───────────────────────
+    function buildCNCRequirements() {
       const act = (name, sku, hours, desc) => ({ name, sku, type: 'Computer Based', hours, desc: desc || '' });
       // isNew=false → "Existing Requirement" badge + dirty-edit footer on changes
       // isAssigned=true → "Assigned Requirement" badge + warning
@@ -2959,7 +2185,7 @@
         _id: _newReqId(), isNew, isAssigned, criteria: 'all', order: 'sequential',
         name, desc: desc || '', hours, activities
       });
-      return [
+      const groups = [
         {
           name: 'Safety Fundamentals', hours: 1.9,
           desc: 'Learners will establish the safety habits and awareness needed to work safely in an industrial machining environment, including identifying workplace hazards, understanding machine guarding requirements, preventing slips and falls, and performing equipment maintenance safely.',
@@ -3058,86 +2284,7 @@
           ],
         },
       ];
-    }
-
-    // ── Open builder pre-populated with AI-generated structure ────────────────
-    function _openAIGeneratedBuilder(formData) {
-      // Demo shortcut: use the full CNC Machinist dataset
-      if (formData._useCNCData) {
-        _savedAsNewInSession = [];
-        currentBuilderType = 'learning-path';
-        currentBuilderData = null;
-        const titleField = document.getElementById('lp-title');
-        const descField  = document.getElementById('lp-description');
-        const saveBtn    = document.getElementById('btn-builder-save');
-        const titleDisplay = document.getElementById('builder-title-display');
-        titleField.label = 'Learning Path Title';
-        titleField.placeholder = 'e.g. Factory Worker to Factory Manager';
-        descField.label = 'Learning Path Description';
-        saveBtn.textContent = 'Save Learning Path';
-        titleDisplay.textContent = 'Learning Path Overview';
-        titleField.value = 'CNC Machinist';
-        descField.value = 'This learning path prepares CNC Machinists with the foundational safety knowledge, regulatory compliance skills, technical machining competencies, and communication abilities required for effective and safe production in a manufacturing environment.';
-        buildAttributesSection();
-        buildStageList(buildCNCStages());
-        showScreen('builder');
-        return;
-      }
-
-      const role     = formData.role || 'New Role';
-      const topics   = formData.topics && formData.topics.length ? formData.topics : ['Safety','Compliance','Technical Skills'];
-
-      // Build a plausible stage structure based on selected topics
-      const TOPIC_REQS = {
-        'Safety':           [{ name:'Workplace Safety Fundamentals', acts:['Hazard Identification & OSHA Basics','Personal Protective Equipment (PPE)','Emergency Response Procedures'] }],
-        'Compliance':       [{ name:'Regulatory Compliance Overview', acts:['Industry Standards & Legal Requirements','Incident Reporting & Documentation','Compliance Audits & Record-Keeping'] }],
-        'Technical Skills': [{ name:'Core Technical Competencies',   acts:['Equipment Operation & Maintenance','Quality Control Procedures','Troubleshooting & Problem Solving'] }],
-        'Leadership':       [{ name:'Leadership Foundations',        acts:['Team Communication & Collaboration','Coaching & Mentoring Basics','Conflict Resolution Strategies'] }],
-        'Communication':    [{ name:'Effective Communication',       acts:['Written & Verbal Communication','Active Listening Skills','Presenting to Stakeholders'] }],
-        'Teamwork':         [{ name:'Team Dynamics',                 acts:['Building Trust & Accountability','Cross-Functional Collaboration','Working in Diverse Teams'] }],
-        'Conflict Resolution': [{ name:'Conflict Management',        acts:['Identifying Sources of Conflict','De-escalation Techniques','Negotiation & Mediation Basics'] }],
-      };
-
-      const generatedStages = topics.slice(0, 4).map((topic) => {
-        const reqDefs = TOPIC_REQS[topic] || [{ name: topic + ' Fundamentals', acts:[topic + ' Core Concepts', 'Applied ' + topic] }];
-        return {
-          name: topic,
-          hours: reqDefs[0].acts.length * 2,
-          requirements: reqDefs.map(rd => ({
-            _id: _newReqId(),
-            isNew: true,
-            isAssigned: false,
-            criteria: 'all',
-            order: 'sequential',
-            name: rd.name,
-            desc: '',
-            hours: rd.acts.length * 2,
-            activities: rd.acts.map(a => ({ name: a, type: 'Computer Based', hours: 2, desc: '' })),
-          })),
-        };
-      });
-
-      // Build with pre-populated stages
-      _savedAsNewInSession = [];
-      currentBuilderType = 'learning-path';
-      currentBuilderData = null;
-
-      const titleField = document.getElementById('lp-title');
-      const descField  = document.getElementById('lp-description');
-      const saveBtn    = document.getElementById('btn-builder-save');
-      const titleDisplay = document.getElementById('builder-title-display');
-
-      titleField.label = 'Learning Path Title';
-      titleField.placeholder = 'e.g. Factory Worker to Factory Manager';
-      descField.label = 'Learning Path Description';
-      saveBtn.textContent = 'Save Learning Path';
-      titleDisplay.textContent = 'Learning Path Overview';
-      titleField.value = role;
-      descField.value = '';
-
-      buildAttributesSection();
-      buildStageList(generatedStages);
-      showScreen('builder');
+      return groups.flatMap(g => g.requirements);
     }
   </script>
 
@@ -3616,32 +2763,29 @@ window._DetailModal = DetailModal;
 
   <script>
     // ── Demo functions (called directly or via postMessage from shell) ────────
-    const _CNC_GOALS = 'The CNC Machinist is responsible for safe machine operation following OSHA safety requirements and machine guarding protocols. Operators must demonstrate proficiency in CNC operation, programming, and tooling setup, as well as blueprint and technical drawing interpretation. The role requires compliance with lockout/tagout procedures, regulatory standards, and hazardous material handling requirements. Employees must communicate effectively with team members, document shift issues accurately, and apply systematic troubleshooting and problem solving to maintain production quality.';
-
-    function demoIntakeFlow() {
-      document.getElementById('ai-processing-scrim')?.remove();
-      document.getElementById('ai-intake-scrim')?.remove();
-      showScreen('manage');
-      setTimeout(() => showAIIntakeModal({ role: 'CNC Machinist', timeline: '6 months', goals: _CNC_GOALS }), 60);
-    }
-
-    function demoSkipToResult() {
-      document.getElementById('ai-processing-scrim')?.remove();
-      document.getElementById('ai-intake-scrim')?.remove();
-      showAIProcessingModal({ role: 'CNC Machinist', timeline: '6 months', topics: ['Safety','Compliance','Technical Skills','Soft Skills'], _useCNCData: true });
+    // The shell demo panel drives the manual flow only. AI demo layers will be
+    // re-introduced later as additional demo messages.
+    function demoLoadSample() {
+      document.getElementById('move-modal-scrim')?.remove();
+      document.getElementById('unsaved-warning-scrim')?.remove();
+      _savedAsNewInSession = [];
+      setupBuilder({
+        name: 'CNC Machinist',
+        description: 'This qualification prepares CNC Machinists with the foundational safety knowledge, regulatory compliance skills, technical machining competencies, and communication abilities required for effective and safe production in a manufacturing environment.',
+      }, buildCNCRequirements());
+      showScreen('builder');
     }
 
     function demoReset() {
-      ['ai-processing-scrim','ai-intake-scrim','move-modal-scrim','unsaved-warning-scrim'].forEach(id => document.getElementById(id)?.remove());
+      ['move-modal-scrim','unsaved-warning-scrim'].forEach(id => document.getElementById(id)?.remove());
       showScreen('manage');
     }
 
     // Listen for messages from the shell demo panel
     window.addEventListener('message', function(e) {
       if (!e.data || !e.data.type) return;
-      if (e.data.type === 'demo:intake') demoIntakeFlow();
-      if (e.data.type === 'demo:skip')   demoSkipToResult();
-      if (e.data.type === 'demo:reset')  demoReset();
+      if (e.data.type === 'demo:load-sample') demoLoadSample();
+      if (e.data.type === 'demo:reset')       demoReset();
     });
   </script>
 </body>

@@ -34,7 +34,6 @@
 
   --vs-breadcrumb-bg:   #6d7371;
   --vs-breadcrumb-text: #ffffff;
-  --vs-subheader-bg:    #8d9796;
   --vs-content-bg:      #ffffff;
   --vs-topnav-text:     #6d7371;
 
@@ -43,7 +42,6 @@
   --vs-topnav-h:           60px;
   --vs-search-h:           50px;
   --vs-breadcrumb-h:       52px;
-  --vs-subheader-h:        50px;
   --vs-row-h:              54px;
 }
 
@@ -397,6 +395,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
   min-width: 0;
   overflow: hidden;
   font-family: "Segoe UI", Arial, sans-serif;
@@ -472,31 +471,23 @@ html, body {
   min-width: 0;
 }
 
-.subheader-bar {
-  background: var(--vs-subheader-bg);
-  height: var(--vs-subheader-h);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 14px;
-  flex-shrink: 0;
-}
-
 .help-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--vs-blue);
-  color: #fff;
+  background: #ffffff;
+  color: var(--vs-blue);
   font-size: 13px;
   font-weight: 400;
   padding: 6px 14px;
   border-radius: 14px;
-  border: none;
+  border: 1px solid rgba(0,0,0,0.12);
   cursor: pointer;
+  margin-left: 12px;
+  flex-shrink: 0;
   transition: background 0.12s;
 }
-.help-btn:hover { background: var(--vs-blue-dark); }
+.help-btn:hover { background: #f1f3f4; }
 .help-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
 .content {
@@ -693,25 +684,19 @@ html, body {
         <!-- dropdown -->
         <div id="shell-demo-dropdown" onclick="event.stopPropagation()" style="display:none;position:absolute;top:calc(100% + 2px);right:0;width:284px;background:#0f172a;border-radius:0 0 10px 10px;border:1px solid rgba(255,255,255,0.1);border-top:3px solid #f59e0b;box-shadow:0 16px 48px rgba(0,0,0,0.4);z-index:300;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;">
           <div style="padding:10px 16px 9px;background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.07);">
-            <p style="margin:0;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;">Demo Controls</p>
+            <p style="margin:0;font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;">Demo Controls · Manual Flow</p>
             <p style="margin:3px 0 0;font-size:12px;font-weight:600;color:#f1f5f9;">CNC Machinist</p>
-            <p style="margin:2px 0 0;font-size:11px;color:#64748b;line-height:1.4;">Manufacturing · 4 Objectives · 10 Requirements · 23 Courses</p>
+            <p style="margin:2px 0 0;font-size:11px;color:#64748b;line-height:1.4;">Manufacturing · 10 Requirements · 23 Courses</p>
           </div>
+          <!-- Demo layers: manual flow only for now. AI layer buttons get added
+               back here later (sendDemo('demo:ai-...')) to highlight AI changes. -->
           <div style="padding:10px 12px;display:flex;flex-direction:column;gap:7px;">
-            <button onclick="sendDemo('demo:intake')" style="display:flex;align-items:center;gap:11px;padding:10px 11px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;cursor:pointer;text-align:left;width:100%;transition:background 0.15s;"
+            <button onclick="sendDemo('demo:load-sample')" style="display:flex;align-items:center;gap:11px;padding:10px 11px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;cursor:pointer;text-align:left;width:100%;transition:background 0.15s;"
               onmouseover="this.style.background='rgba(59,130,246,0.18)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
               <span style="width:28px;height:28px;border-radius:7px;background:#3b82f6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800;color:#fff;">1</span>
               <div>
-                <p style="margin:0;font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.3;">Open Intake Flow</p>
-                <p style="margin:1px 0 0;font-size:11px;color:#64748b;line-height:1.3;">Pre-filled with CNC Machinist role</p>
-              </div>
-            </button>
-            <button onclick="sendDemo('demo:skip')" style="display:flex;align-items:center;gap:11px;padding:10px 11px;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);border-radius:8px;cursor:pointer;text-align:left;width:100%;transition:background 0.15s;"
-              onmouseover="this.style.background='rgba(139,92,246,0.18)'" onmouseout="this.style.background='rgba(139,92,246,0.1)'">
-              <span style="width:28px;height:28px;border-radius:7px;background:#8b5cf6;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800;color:#fff;">2</span>
-              <div>
-                <p style="margin:0;font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.3;">Skip to Full Result</p>
-                <p style="margin:1px 0 0;font-size:11px;color:#64748b;line-height:1.3;">Show AI-generated CNC path directly</p>
+                <p style="margin:0;font-size:12px;font-weight:700;color:#e2e8f0;line-height:1.3;">Load CNC Machinist Sample</p>
+                <p style="margin:1px 0 0;font-size:11px;color:#64748b;line-height:1.3;">Open the builder pre-filled with the full dataset</p>
               </div>
             </button>
             <div style="height:1px;background:rgba(255,255,255,0.06);margin:2px 0;"></div>
@@ -779,9 +764,6 @@ html, body {
           </span>
           <h1 class="PageActionTitle" id="bcTitle">Administration Dashboard</h1>
         </div>
-      </div>
-
-      <div class="subheader-bar" id="subheaderBar">
         <button class="help-btn">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 17h-2v-2h2v2zm2.07-7.75-.9.92A3.4 3.4 0 0 0 13 14.5h-2v-.5a4 4 0 0 1 1.17-2.83l1.24-1.26A1.96 1.96 0 0 0 14 8.5a2 2 0 1 0-4 0H8a4 4 0 1 1 7.07 2.75z"/></svg>
           <span>Help</span>
@@ -932,9 +914,9 @@ const INSIGHTS_TREE = [
 ];
 
 const VIEWS = {
-  administration: { label:"Administration Dashboard", context:"Orlando Organization",  defaultRoute:"dashboard",          breadcrumbStyle:"gray", showSubheader:true  },
-  insights:       { label:"Activity Exception Report", context:"ContractorTest",        defaultRoute:"activity-exception", breadcrumbStyle:"blue", showSubheader:false },
-  training:       { label:"My Training",               context:"Orlando Organization",  defaultRoute:"my-training",        breadcrumbStyle:"gray", showSubheader:false },
+  administration: { label:"Administration Dashboard", context:"Orlando Organization",  defaultRoute:"dashboard",          breadcrumbStyle:"gray" },
+  insights:       { label:"Activity Exception Report", context:"ContractorTest",        defaultRoute:"activity-exception", breadcrumbStyle:"blue" },
+  training:       { label:"My Training",               context:"Orlando Organization",  defaultRoute:"my-training",        breadcrumbStyle:"gray" },
 };
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -1036,10 +1018,10 @@ function renderInsightsNav() {
   });
 }
 
-// ─── Breadcrumb + subheader update ───────────────────────────────────────────
+// ─── Breadcrumb update ────────────────────────────────────────────────────────
 function updateChrome() {
   const view = VIEWS[activeTab] || {
-    context: "Orlando Organization", breadcrumbStyle: "gray", showSubheader: false,
+    context: "Orlando Organization", breadcrumbStyle: "gray",
   };
 
   // Breadcrumb style
@@ -1064,9 +1046,6 @@ function updateChrome() {
   // Page title
   document.getElementById('bcTitle').textContent = routeLabel;
 
-  // Subheader
-  document.getElementById('subheaderBar').style.display = view.showSubheader ? 'flex' : 'none';
-
   // Content slot info (only present when the blank-slot template is rendered)
   const slotView  = document.getElementById('slotView');
   const slotRoute = document.getElementById('slotRoute');
@@ -1087,12 +1066,10 @@ function renderContent() {
 
   // ── Route → content mapping ────────────────────────────────────────────────
   if (activeRoute === 'qual-quals') {
-    // Hide the subheader by default; the iframe will re-show it when the builder opens
-    document.getElementById('subheaderBar').style.display = 'none';
     slot.innerHTML = `<iframe
       src="prototype/manage-qualifications.html"
       style="width:100%;height:100%;border:none;display:block;"
-      title="Manage Qualifications & Learning Paths"
+      title="Manage Qualifications"
     ></iframe>`;
   } else if (activeRoute === 'my-training') {
     slot.innerHTML = `<iframe
@@ -1189,7 +1166,7 @@ function showShellUnsavedWarning(onLeave) {
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
         </svg>
       </div>
-      <p style="font-size:21px;font-weight:700;color:#111827;margin:0 0 36px;line-height:1.3;">You have unsaved changes to this learning path.</p>
+      <p style="font-size:21px;font-weight:700;color:#111827;margin:0 0 36px;line-height:1.3;">You have unsaved changes to this qualification.</p>
       <div style="display:flex;gap:12px;">
         <button id="suw-cancel" style="flex:1;padding:14px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#374151;font-weight:500;">Cancel</button>
         <button id="suw-discard" style="flex:1;padding:14px;border:1.5px solid #3b82f6;border-radius:8px;background:#fff;font-size:15px;font-family:inherit;cursor:pointer;color:#3b82f6;font-weight:500;">Discard Changes</button>
@@ -1232,12 +1209,7 @@ document.getElementById('adminSearch').addEventListener('input', e => {
 });
 
 // ─── Prototype iframe messages ────────────────────────────────────────────────
-// Prototypes can call window.parent.postMessage({ type:'shell:subheader', show:true/false }, '*')
-// to show or hide the subheader bar independently of the route config.
 window.addEventListener('message', (e) => {
-  if (e.data && e.data.type === 'shell:subheader') {
-    document.getElementById('subheaderBar').style.display = e.data.show ? 'flex' : 'none';
-  }
   if (e.data && e.data.type === 'shell:builder-active') {
     builderActive = e.data.active;
   }
