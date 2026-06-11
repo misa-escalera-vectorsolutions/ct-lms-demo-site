@@ -1224,25 +1224,23 @@
       titleEl.textContent = data ? (data.name || '') : '';
       descField.value     = data ? (data.description || '') : '';
 
-      qualSettings = { criteria: 'all', order: 'sequential', sku: '' };
-      buildQualSettingsCard();
+      qualSettings = { criteria: 'all', criteriaCount: 1, timeMinutes: 60, order: 'sequential', sku: '' };
       buildAttributesSection();
 
       const initialReqs = reqData || (data ? SAMPLE_REQUIREMENTS() : NEW_DEFAULT_REQUIREMENTS());
       buildReqList(initialReqs);
+      // Built after the requirement list so the "of N" count is accurate
+      buildQualSettingsCard();
     }
 
     // ── Qualification settings (collapsible card) ──────────────
-    let qualSettings = { criteria: 'all', order: 'sequential', sku: '' };
-
-    function _settingsSummary(s) {
-      const crit = s.criteria === 'all' ? 'Complete all' : 'Complete a specific number';
-      const ord  = s.order === 'sequential' ? 'Sequential order' : 'Any order';
-      return `${crit} · ${ord}`;
-    }
+    // Options mirror the legacy application: complete all requirements,
+    // a specific number of them, or an accumulated amount of time.
+    let qualSettings = { criteria: 'all', criteriaCount: 1, timeMinutes: 60, order: 'sequential', sku: '' };
 
     function buildQualSettingsCard() {
       const section = document.getElementById('qual-settings-section');
+      const s = qualSettings;
       section.innerHTML = `
         <div class="builder-section qual-settings-card">
           <div class="settings-strip" id="qual-settings-strip">
@@ -1254,17 +1252,26 @@
             </div>
             <div class="settings-strip__body">
               <div class="settings-group">
-                <div class="settings-group__title">Requirement Completion Criteria</div>
-                <label><input type="radio" name="qual-criteria" value="all"> Complete all requirements</label>
-                <label><input type="radio" name="qual-criteria" value="specific"> Complete a specific number of requirements</label>
+                <span class="settings-group__title">To Complete This Qualification</span>
+                <label><input type="radio" name="qual-criteria" value="all" ${s.criteria === 'all' ? 'checked' : ''}>
+                  <span>Users must complete all requirements</span></label>
+                <label><input type="radio" name="qual-criteria" value="specific" ${s.criteria === 'specific' ? 'checked' : ''}>
+                  <span>Users must complete a specific number of requirements:
+                    <input type="number" class="settings-num-input" id="qual-criteria-count" min="1" value="${s.criteriaCount}">
+                    <span id="qual-count-total">of ${qualReqs.length}</span></span></label>
+                <label><input type="radio" name="qual-criteria" value="time" ${s.criteria === 'time' ? 'checked' : ''}>
+                  <span>Users must accumulate a certain amount of time:
+                    <input type="number" class="settings-num-input" id="qual-time-minutes" min="1" value="${s.timeMinutes}"> minutes</span></label>
               </div>
               <div class="settings-group">
-                <div class="settings-group__title">Requirement Completion Order</div>
-                <label><input type="radio" name="qual-order" value="sequential"> Sequential (Complete in listed order)</label>
-                <label><input type="radio" name="qual-order" value="any"> Any Order</label>
+                <span class="settings-group__title">Requirement Completion Order</span>
+                <label><input type="radio" name="qual-order" value="any" ${s.order === 'any' ? 'checked' : ''}>
+                  <span>Any order. Requirements can be completed in any sequence.</span></label>
+                <label><input type="radio" name="qual-order" value="sequential" ${s.order === 'sequential' ? 'checked' : ''}>
+                  <span>Sequential. Requirements must be completed in the order shown.</span></label>
               </div>
               <div class="settings-group">
-                <div class="settings-group__title">External ID / SKU</div>
+                <span class="settings-group__title">External ID / SKU</span>
                 <vaadin-text-field theme="outlined" id="qual-sku"
                   placeholder="e.g. ABC1234567890" style="width:100%;"></vaadin-text-field>
               </div>
@@ -1272,24 +1279,47 @@
           </div>
         </div>
       `;
+
+      const countInput = section.querySelector('#qual-criteria-count');
+      const timeInput  = section.querySelector('#qual-time-minutes');
+      function syncInputs() {
+        countInput.disabled = qualSettings.criteria !== 'specific';
+        timeInput.disabled  = qualSettings.criteria !== 'time';
+      }
+      [countInput, timeInput].forEach(inp =>
+        inp.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); }));
+      countInput.addEventListener('change', () => {
+        qualSettings.criteriaCount = Math.max(1, parseInt(countInput.value) || 1);
+        countInput.value = qualSettings.criteriaCount;
+        updateQualSettingsSummary();
+      });
+      timeInput.addEventListener('change', () => {
+        qualSettings.timeMinutes = Math.max(1, parseInt(timeInput.value) || 1);
+        timeInput.value = qualSettings.timeMinutes;
+        updateQualSettingsSummary();
+      });
       section.querySelectorAll('[name="qual-criteria"]').forEach(r => {
-        r.checked = r.value === qualSettings.criteria;
-        r.addEventListener('change', () => { qualSettings.criteria = r.value; updateQualSettingsSummary(); });
+        r.addEventListener('change', () => { qualSettings.criteria = r.value; syncInputs(); updateQualSettingsSummary(); });
       });
       section.querySelectorAll('[name="qual-order"]').forEach(r => {
-        r.checked = r.value === qualSettings.order;
         r.addEventListener('change', () => { qualSettings.order = r.value; updateQualSettingsSummary(); });
       });
       const skuField = section.querySelector('#qual-sku');
       skuField.value = qualSettings.sku || '';
       skuField.addEventListener('input', () => { qualSettings.sku = skuField.value.trim(); updateQualSettingsSummary(); });
+      syncInputs();
       updateQualSettingsSummary();
     }
 
     function updateQualSettingsSummary() {
+      const totalEl = document.getElementById('qual-count-total');
+      if (totalEl) totalEl.textContent = `of ${qualReqs.length}`;
       const el = document.getElementById('qual-settings-summary');
       if (!el) return;
-      let text = _settingsSummary(qualSettings).replace('Complete all', 'Complete all requirements');
+      let crit = 'Complete all requirements';
+      if (qualSettings.criteria === 'specific') crit = `${qualSettings.criteriaCount} of ${qualReqs.length} requirements`;
+      else if (qualSettings.criteria === 'time') crit = `${qualSettings.timeMinutes} minutes accumulated`;
+      let text = `${crit} · ${qualSettings.order === 'sequential' ? 'Sequential order' : 'Any order'}`;
       if (qualSettings.sku) text += ` · SKU: ${qualSettings.sku}`;
       el.textContent = text;
     }
@@ -2122,6 +2152,8 @@
       if (reqsEl)   reqsEl.textContent   = `${reqCount} Requirement${reqCount !== 1 ? 's' : ''}`;
       if (actsEl)   actsEl.textContent   = `${actCount} Activit${actCount !== 1 ? 'ies' : 'y'}`;
       if (hoursEl)  hoursEl.textContent  = formatDuration(hours);
+      // Keep the qualification settings "of N" count and summary in sync
+      updateQualSettingsSummary();
     }
 
     // ── Requirement structure rail ─────────────────────────────
