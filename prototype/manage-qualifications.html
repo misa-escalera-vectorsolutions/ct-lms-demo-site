@@ -191,23 +191,36 @@
       content: attr(data-placeholder);
       color: rgba(255,255,255,0.55);
     }
-    .hero-top .title-with-edit { margin-bottom: 12px; }
+    .builder-hero-band .title-with-edit { margin-bottom: 12px; }
     .hero-edit-btn { color: rgba(255,255,255,0.75); }
     .hero-edit-btn:hover { color: #ffffff; background: rgba(255,255,255,0.12); }
-    /* Dark branded hero band — distinguishes the builder header from
-       the requirement cards below (picker hero palette) */
-    .hero-top {
-      padding: 20px 24px 18px;
-      background: linear-gradient(135deg, #1B2B41 0%, #0271CE 100%);
-      border-radius: 8px 8px 0 0;
+    /* Flat deep slate band: spans the main column (not the rail), darker than
+       the body for contrast but lighter than the topnav navy */
+    .builder-hero-band {
+      margin: -24px -24px 0;
+      padding: 18px 24px 20px;
+      background: #2E4A68;
     }
-    .hero-top .stat-pill {
+    .builder-hero-band .stat-pill {
       background: rgba(255,255,255,0.16);
       color: #ffffff;
       border: 1px solid rgba(255,255,255,0.22);
     }
-    .hero-form {
-      padding: 20px 24px 24px;
+    .hero-desc { margin-top: 12px; }
+    .hero-desc vaadin-text-area::part(label) { color: rgba(255,255,255,0.9); }
+    /* ::part(input-field) does not pierce the nested vaadin-input-container host,
+       so paint the slotted native textarea white instead */
+    .hero-desc vaadin-text-area > textarea {
+      background: #ffffff;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .hero-desc vaadin-text-area {
+      --vaadin-input-field-border-color: rgba(255,255,255,0.5);
+    }
+    .hero-cards {
+      display: flex; flex-direction: column; gap: 12px;
+      margin-top: 14px;
     }
     .hero-controls {
       display: flex; gap: 0; flex-shrink: 0; align-self: flex-start;
@@ -219,11 +232,15 @@
       color: #ffffff;
     }
 
+    .builder-scroll {
+      flex: 1; overflow-y: auto;
+      display: flex; flex-direction: column;
+    }
     .builder-body-wrap {
-      display: flex; flex: 1; overflow: hidden;
+      display: flex; flex: 1;
     }
     .builder-main {
-      flex: 1; overflow-y: auto; padding: 24px;
+      flex: 1; min-width: 0; padding: 24px;
       display: flex; flex-direction: column; gap: 16px;
     }
     .builder-section {
@@ -568,6 +585,9 @@
       display: flex; flex-direction: column;
       overflow: hidden;
       transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      /* Stays pinned while the hero band and requirement list scroll */
+      position: sticky; top: 0; align-self: flex-start;
+      height: calc(100vh - 65px);
     }
     .builder-rail.rail-collapsed {
       width: 42px;
@@ -849,46 +869,48 @@
   <!-- Screen 2: Builder -->
   <div id="screen-builder" class="screen">
 
+    <!-- Single scroll container: hero band scrolls with the content, rail stays sticky -->
+    <div class="builder-scroll">
+
     <!-- Builder body (main + rail) -->
     <div class="builder-body-wrap">
       <div class="builder-main">
 
-        <!-- Hero card: breadcrumb + title + stats + form fields -->
-        <div class="builder-section" style="padding:0;">
-          <div class="hero-top">
-            <div class="builder-breadcrumb">
-              <a onclick="confirmLeaveBuilder(() => showScreen('manage'))">← Qualifications</a>
-            </div>
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
-              <div style="min-width:0;flex:1;">
-                <div class="title-with-edit" style="max-width:100%;">
-                  <span class="builder-title" id="qual-title" contenteditable="true" spellcheck="false"
-                    data-placeholder="Untitled Qualification"></span>
-                  <button class="name-edit-btn hero-edit-btn" title="Rename"
-                    onclick="document.getElementById('qual-title').focus()"><i class="fa-regular fa-pen-to-square"></i></button>
-                </div>
-                <div class="stats-row" id="builder-stats-row">
-                  <span class="stat-pill"><i class="fa-regular fa-clock"></i> <span id="stat-hours">0 hrs</span></span>
-                  <span class="stat-pill"><i class="fa-solid fa-list-check"></i> <span id="stat-reqs">0 Requirements</span></span>
-                  <span class="stat-pill"><i class="fa-solid fa-play"></i> <span id="stat-acts">0 Activities</span></span>
-                </div>
-              </div>
-              <div class="hero-controls">
-                <vaadin-button theme="icon tertiary" aria-label="More" onclick="qualMoreMenu(event)"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
-              </div>
-            </div>
+      <!-- Hero band: breadcrumb, title, stats, description, settings, attributes.
+           Spans the main column up to the rail and scrolls with the content -->
+      <div class="builder-hero-band">
+      <div class="builder-breadcrumb">
+        <a onclick="confirmLeaveBuilder(() => showScreen('manage'))">← Qualifications</a>
+      </div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div style="min-width:0;flex:1;">
+          <div class="title-with-edit" style="max-width:100%;">
+            <span class="builder-title" id="qual-title" contenteditable="true" spellcheck="false"
+              data-placeholder="Untitled Qualification"></span>
+            <button class="name-edit-btn hero-edit-btn" title="Rename"
+              onclick="document.getElementById('qual-title').focus()"><i class="fa-regular fa-pen-to-square"></i></button>
           </div>
-          <div class="hero-form">
-            <vaadin-text-area theme="outlined" id="lp-description" label="Qualification Description"
-              style="width:100%;" rows="4"></vaadin-text-area>
+          <div class="stats-row" id="builder-stats-row">
+            <span class="stat-pill"><i class="fa-regular fa-clock"></i> <span id="stat-hours">0 hrs</span></span>
+            <span class="stat-pill"><i class="fa-solid fa-list-check"></i> <span id="stat-reqs">0 Requirements</span></span>
+            <span class="stat-pill"><i class="fa-solid fa-play"></i> <span id="stat-acts">0 Activities</span></span>
           </div>
         </div>
-
+        <div class="hero-controls">
+          <vaadin-button theme="icon tertiary" aria-label="More" onclick="qualMoreMenu(event)"><i class="fa-solid fa-ellipsis-vertical"></i></vaadin-button>
+        </div>
+      </div>
+      <div class="hero-desc">
+        <vaadin-text-area theme="outlined" id="lp-description" label="Qualification Description"
+          style="width:100%;" rows="2"></vaadin-text-area>
+      </div>
+      <div class="hero-cards">
         <!-- Qualification settings (collapsible card) -->
         <div id="qual-settings-section"></div>
-
         <!-- Attributes section -->
         <div id="attributes-section"></div>
+      </div>
+      </div><!-- /.builder-hero-band -->
 
         <!-- Requirement list -->
         <div id="req-list-main"></div>
@@ -915,6 +937,8 @@
         <div class="rail-list" id="rail-list"></div>
       </div>
     </div>
+
+    </div><!-- /.builder-scroll -->
 
     <!-- Footer bar -->
     <div class="builder-footer">
@@ -2004,7 +2028,7 @@
       });
       document.body.appendChild(menu);
       setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
-      const scroller = document.querySelector('.builder-main');
+      const scroller = document.querySelector('.builder-scroll');
       const closeOnScroll = () => { menu.remove(); scroller.removeEventListener('scroll', closeOnScroll); };
       scroller.addEventListener('scroll', closeOnScroll, { once: true });
     }
